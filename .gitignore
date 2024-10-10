@@ -1,0 +1,5 @@
+# Ignore vscode local settings
+.vscode
+
+# Ignore java classes
+*.class
