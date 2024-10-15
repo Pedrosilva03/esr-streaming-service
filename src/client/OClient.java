@@ -2,7 +2,11 @@ package client;
 
 import javax.swing.*;
 
+import utils.VideoStream;
+
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Scanner;
 
 public class OClient {
@@ -18,6 +22,8 @@ public class OClient {
     private static JButton stopButton;
 
     private static Scanner s = new Scanner(System.in);
+
+    private VideoStream video;
 
     private static void setupWindow(String title){
         // Main window
@@ -44,15 +50,35 @@ public class OClient {
 
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+        playButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e){
+                // Play button logic
+            }
+        });
+
+        pauseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e){
+                // Pause button logic
+            }
+        });
+
+        stopButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e){
+                // Stop button logic
+            }
+        });
+
         window.setVisible(true);
     }
 
     public static void main(String[] args) {
         System.out.println("Bem vindo ao SRTube! - Escolha um vídeo para assistir");
-
-        s.nextLine();
-        String video = s.nextLine();
         
+        String video = s.nextLine();
+        // TODO: Perguntar se o video existe para abrir a janela (só uma ideia para uma cena gira)
+
         setupWindow("SRTube");
+
+        // TODO: Receber packets e dar display
     }
 }
