@@ -1,5 +1,8 @@
 package node;
 
-public class NodeServer {
+public class NodeServer implements Runnable{
     
+    public void run(){
+        
+    }
 }
