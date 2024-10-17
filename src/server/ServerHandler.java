@@ -25,7 +25,6 @@ public class ServerHandler implements Runnable{
 
     public void run(){
         boolean status = true;
-        boolean ready = false;
         String requestedVideo;
         while(status){
             try{
@@ -42,11 +41,11 @@ public class ServerHandler implements Runnable{
 
                 if(requestSplit[0].equals("READY")){
                     status = false;
-                    ready = true;
                 }
 
                 if(requestSplit[0].equals(Messages.disconnect)){
                     status = false;
+                    return;
                 }
             }
             catch(IOException e){
@@ -55,10 +54,6 @@ public class ServerHandler implements Runnable{
         }
 
         // Send video packets se tiver confirmação
-
-        if(ready){
-            
-        }
     }
 
 

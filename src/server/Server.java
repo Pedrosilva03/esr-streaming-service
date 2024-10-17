@@ -14,7 +14,7 @@ public class Server {
 
             System.out.println("Servidor de streaming ativo em: " + ss.getInetAddress().getHostAddress() + " na porta " + ss.getLocalPort());
 
-            Manager database = new Manager();
+            Manager database = new Manager("videos");
 
             while(true){
                 Socket s = ss.accept();
