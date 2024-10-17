@@ -71,13 +71,19 @@ public class OClient {
         window.setVisible(true);
     }
 
+    private static int checkVideo(String video){
+        // TODO: Perguntar ao servidor se o video existe
+        return 1;
+    }
+
     public static void main(String[] args) {
         System.out.println("Bem vindo ao SRTube! - Escolha um vídeo para assistir");
         
         String video = s.nextLine();
-        // TODO: Perguntar se o video existe para abrir a janela (só uma ideia para uma cena gira)
 
-        setupWindow("SRTube");
+        int valid = checkVideo(video);
+        
+        if(valid == 1) setupWindow("SRTube");
 
         // TODO: Receber packets e dar display
     }
