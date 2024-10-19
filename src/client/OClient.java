@@ -2,12 +2,22 @@ package client;
 
 import javax.swing.*;
 
+import utils.Messages;
+import utils.Ports;
 import utils.VideoStream;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+
 import java.util.Scanner;
+import java.net.Socket;
+import java.io.IOException;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 
 public class OClient {
 
@@ -23,7 +33,10 @@ public class OClient {
 
     private static Scanner s = new Scanner(System.in);
 
-    private VideoStream video;
+    private static Socket tcpSocket;
+    private static DataInputStream dis;
+    private static DataOutputStream dos;
+    private static VideoStream video;
 
     private static void setupWindow(String title){
         // Main window
@@ -68,23 +81,65 @@ public class OClient {
             }
         });
 
+        window.addWindowListener(new WindowAdapter(){
+            public void windowClosing(WindowEvent e){
+                try{
+                    dos.writeUTF(Messages.generateDisconnectMessage());
+                    dos.flush();
+                }
+                catch(IOException io){
+                    System.out.println("Erro ao tentar desconectar, a sair forçadamente");
+                    System.exit(0);
+                }
+            }
+        });
+
         window.setVisible(true);
     }
 
-    private static int checkVideo(String video){
+    private static void setupConnection() throws IOException{
+        tcpSocket = new Socket("10.0.0.10", Ports.DEFAULT_SERVER_PORT);
+
+        dis = new DataInputStream(tcpSocket.getInputStream());
+        dos = new DataOutputStream(tcpSocket.getOutputStream());
+    }
+
+    private static int checkVideo(String video) throws IOException{
         // TODO: Perguntar ao servidor se o video existe
-        return 1;
+        
+        dos.writeUTF(Messages.generateCheckVideoMessage(video));
+        dos.flush();
+        return dis.readInt();
+    }
+
+    private static void recieveVideo(){
+
     }
 
     public static void main(String[] args) {
-        System.out.println("Bem vindo ao SRTube! - Escolha um vídeo para assistir");
-        
-        String video = s.nextLine();
+        try{
+            setupConnection();
+        }
+        catch(IOException e){
+            System.out.println("Erro ao conectar-se");
+            System.exit(1);
+        }
 
-        int valid = checkVideo(video);
-        
-        if(valid == 1) setupWindow("SRTube");
+        try{
+            System.out.println("Bem vindo ao SRTube! - Escolha um vídeo para assistir");
+            
+            String video = s.nextLine();
 
-        // TODO: Receber packets e dar display
+            int valid = checkVideo(video);
+            
+            if(valid == 1){
+                setupWindow("SRTube");
+                recieveVideo();
+            }
+        }
+        catch(IOException e){
+            System.out.println("Conexão perdida");
+            System.exit(1);
+        }
     }
 }

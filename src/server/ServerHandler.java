@@ -23,37 +23,46 @@ public class ServerHandler implements Runnable{
         this.database = database;
     }
 
+    private void sendPackets(){
+
+    }
+
     public void run(){
         boolean status = true;
         String requestedVideo;
+
+        System.out.println("Cliente " + this.address + " conectado");
         while(status){
             try{
-                String request = dis.readUTF();
+                String request = this.dis.readUTF();
+
                 String[] requestSplit = request.split(" ");
 
-                if(requestSplit[0].equals(Messages.check_video)){
-                    if(database.checkVideoExists(request)){
-                        requestedVideo = requestSplit[1];
-                        dos.writeInt(1);
+                if(requestSplit[1].equals(Messages.check_video)){
+                    if(this.database.checkVideoExists(requestSplit[2])){
+                        requestedVideo = requestSplit[2];
+                        this.dos.writeInt(1);
                     }
-                    else dos.writeInt(0);
+                    else this.dos.writeInt(0);
+                    this.dos.flush();
                 }
 
-                if(requestSplit[0].equals("READY")){
-                    status = false;
+                if(requestSplit[1].equals("READY")){
+                    // TODO: Send video packets if confirmed
+                    this.sendPackets();
                 }
 
-                if(requestSplit[0].equals(Messages.disconnect)){
+                if(requestSplit[1].equals(Messages.disconnect)){
                     status = false;
-                    return;
+                    continue;
                 }
             }
             catch(IOException e){
-                System.out.println("Cliente " + address + " desconectado inesperadamente");
+                System.out.println("Cliente " + this.address + " desconectado inesperadamente");
+                return;
             }
         }
-
-        // Send video packets se tiver confirmação
+        System.out.println("Cliente " + this.address + " desconectado com sucesso");
     }
 
 
