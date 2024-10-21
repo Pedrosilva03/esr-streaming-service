@@ -142,7 +142,7 @@ public class OClient {
     private static void recieveVideo() throws IOException{
         playing = true;
         while(playing){
-            if(pause){
+            while(pause){
                 try{
                     Thread.currentThread().sleep(40);
                 }
