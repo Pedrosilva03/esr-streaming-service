@@ -140,20 +140,19 @@ public class OClient {
     }
 
     private static void recieveVideo() throws IOException{
-        byte[] data = new byte[65536];
-        DatagramPacket packet = new DatagramPacket(data, data.length);
-        udpSocket.receive(packet);
-
         playing = true;
         while(playing){
             if(pause){
                 try{
-                    Thread.currentThread().sleep(100);
+                    Thread.currentThread().sleep(40);
                 }
                 catch(InterruptedException e){
                     System.out.println("Error pausing");
                 }
             }
+            byte[] data = new byte[65536];
+            DatagramPacket packet = new DatagramPacket(data, data.length);
+            udpSocket.receive(packet);
 
             ByteArrayInputStream bis = new ByteArrayInputStream(packet.getData(), 0, packet.getLength());
             BufferedImage frame = ImageIO.read(bis);
