@@ -15,8 +15,8 @@ public class Manager {
         this.addVideosFromFolder();
     }
 
-    public void addVideo(String name, String videoName){
-        videos.put(videoName, null);
+    public void addVideo(String name, VideoStream video){
+        videos.put(name, video);
     }
 
     public void addVideosFromFolder(){
@@ -26,7 +26,7 @@ public class Manager {
 
         for(File videoFile: videoFiles){
             try{
-                videos.put(videoFile.getName(), new VideoStream(this.filepath + "/" + videoFile.getName()));
+                addVideo(videoFile.getName(), new VideoStream(this.filepath + "/" + videoFile.getName()));
             }
             catch(Exception e){
                 System.out.println(e.getMessage());

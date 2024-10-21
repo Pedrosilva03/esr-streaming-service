@@ -1,23 +1,31 @@
 package client;
 
 import javax.swing.*;
+import javax.imageio.ImageIO;
 
 import utils.Messages;
 import utils.Ports;
+import utils.RTPpacket;
 import utils.VideoStream;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 
 import java.util.Scanner;
+import java.util.List;
+
 import java.net.Socket;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+
 import java.io.IOException;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.ByteArrayInputStream;
 
 public class OClient {
 
@@ -34,9 +42,15 @@ public class OClient {
     private static Scanner s = new Scanner(System.in);
 
     private static Socket tcpSocket;
+    private static DatagramSocket udpSocket;
+
     private static DataInputStream dis;
     private static DataOutputStream dos;
-    private static VideoStream video;
+
+    private static boolean playing;
+    private static boolean pause;
+
+    private static BufferedImage currentFrame;
 
     private static void setupWindow(String title){
         // Main window
@@ -45,7 +59,15 @@ public class OClient {
         window.setLayout(new BorderLayout());
 
         // Panel for the video setup
-        videoPanel = new JPanel();
+        videoPanel = new JPanel(){
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                if (currentFrame != null) {
+                    g.drawImage(currentFrame, 0, 0, this.getWidth(), this.getHeight(), null);
+                }
+            }
+        };
         videoPanel.setBackground(Color.BLACK);
         window.add(videoPanel, BorderLayout.CENTER);
 
@@ -66,35 +88,42 @@ public class OClient {
         playButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e){
                 // Play button logic
+                pause = false;
             }
         });
 
         pauseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e){
                 // Pause button logic
+                pause = true;
             }
         });
 
         stopButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e){
                 // Stop button logic
+                playing = false;
             }
         });
 
         window.addWindowListener(new WindowAdapter(){
             public void windowClosing(WindowEvent e){
-                try{
-                    dos.writeUTF(Messages.generateDisconnectMessage());
-                    dos.flush();
-                }
-                catch(IOException io){
-                    System.out.println("Erro ao tentar desconectar, a sair forçadamente");
-                    System.exit(0);
-                }
+                disconnectFromServer();
             }
         });
 
         window.setVisible(true);
+    }
+
+    private static void disconnectFromServer(){
+        try{
+            dos.writeUTF(Messages.generateDisconnectMessage());
+            dos.flush();
+        }
+        catch(IOException io){
+            System.out.println("Erro ao tentar desconectar, a sair forçadamente");
+            System.exit(0);
+        }
     }
 
     private static void setupConnection() throws IOException{
@@ -105,20 +134,55 @@ public class OClient {
     }
 
     private static int checkVideo(String video) throws IOException{
-        // TODO: Perguntar ao servidor se o video existe
-        
         dos.writeUTF(Messages.generateCheckVideoMessage(video));
         dos.flush();
         return dis.readInt();
     }
 
-    private static void recieveVideo(){
+    private static void recieveVideo() throws IOException{
+        byte[] data = new byte[65536];
+        DatagramPacket packet = new DatagramPacket(data, data.length);
+        udpSocket.receive(packet);
+
+        playing = true;
+        while(playing){
+            if(pause){
+                try{
+                    Thread.currentThread().sleep(100);
+                }
+                catch(InterruptedException e){
+                    System.out.println("Error pausing");
+                }
+            }
+
+            ByteArrayInputStream bis = new ByteArrayInputStream(packet.getData(), 0, packet.getLength());
+            BufferedImage frame = ImageIO.read(bis);
+
+            currentFrame = frame;
+            videoPanel.repaint();
+        }
+        stopVideo();
+    }
+
+    private static void requestVideo(String video) throws IOException{
+        dos.writeUTF(Messages.generateReadyMessage());
+        recieveVideo();
+    }
+
+    private static void stopVideo(){
 
     }
 
     public static void main(String[] args) {
         try{
             setupConnection();
+            try{
+                udpSocket = new DatagramSocket(Ports.DEFAULT_CLIENT_UDP_PORT);
+            }
+            catch(IOException e){
+                System.out.println("Erro ao iniciar conexão para receção");
+                disconnectFromServer();
+            }
         }
         catch(IOException e){
             System.out.println("Erro ao conectar-se");
@@ -134,7 +198,7 @@ public class OClient {
             
             if(valid == 1){
                 setupWindow("SRTube");
-                recieveVideo();
+                requestVideo(video);
             }
         }
         catch(IOException e){
