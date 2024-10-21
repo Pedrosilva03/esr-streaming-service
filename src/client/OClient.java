@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.ByteArrayInputStream;
+import java.nio.ByteBuffer;
 
 public class OClient {
 
@@ -144,13 +145,23 @@ public class OClient {
         while(playing){
             while(pause){
                 try{
-                    Thread.currentThread().sleep(40);
+                    Thread.sleep(40);
                 }
                 catch(InterruptedException e){
                     System.out.println("Error pausing");
                 }
             }
-            byte[] data = new byte[65536];
+
+            // Recebe o tamanho do packet
+            byte[] frameSizeByte = new byte[4];
+            DatagramPacket frameSizePacket = new DatagramPacket(frameSizeByte, frameSizeByte.length);
+            udpSocket.receive(frameSizePacket);
+
+            // Converter os bytes recebidos para um inteiro
+            ByteBuffer wrapped = ByteBuffer.wrap(frameSizeByte);
+            int frameSize = wrapped.getInt();
+
+            byte[] data = new byte[frameSize];
             DatagramPacket packet = new DatagramPacket(data, data.length);
             udpSocket.receive(packet);
 

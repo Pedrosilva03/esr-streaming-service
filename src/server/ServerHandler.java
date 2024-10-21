@@ -6,6 +6,7 @@ import java.net.DatagramPacket;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.nio.ByteBuffer;
 import java.io.IOException;
 import java.net.InetAddress;
 
@@ -37,13 +38,20 @@ public class ServerHandler implements Runnable{
         this.activeStreaming = true;
         while(activeStreaming){
             try{
-                byte b[] = new byte[65335];
+                byte b[] = new byte[15000];
                 int frame_length = this.video.getnextframe(b);
+
+                // Envio do tamanho do frame
+                ByteBuffer size = ByteBuffer.allocate(4);
+                size.putInt(frame_length);
+
+                DatagramPacket frame_size = new DatagramPacket(size.array(), size.array().length, this.address, Ports.DEFAULT_CLIENT_UDP_PORT);
+                ds.send(frame_size);
 
                 DatagramPacket frame = new DatagramPacket(b, frame_length, this.address, Ports.DEFAULT_CLIENT_UDP_PORT);
                 ds.send(frame);
 
-                System.out.println("Frame enviado");
+                System.out.println("Frame enviado com tamanho: " + frame_length);
 
                 Thread.sleep(40);
             }
