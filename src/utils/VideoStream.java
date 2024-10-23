@@ -47,4 +47,8 @@ public class VideoStream {
 
         return(fis.read(frame,0,length));
     }
+
+    public String getFilename(){
+        return this.filenamee;
+    }
 }

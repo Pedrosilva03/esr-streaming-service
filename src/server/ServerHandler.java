@@ -39,7 +39,8 @@ public class ServerHandler implements Runnable{
         while(activeStreaming){
             try{
                 byte b[] = new byte[15000];
-                int frame_length = this.video.getnextframe(b);
+                int frame_length = this.database.stream(video, b);
+                //int frame_length = this.video.getnextframe(b);
 
                 // Envio do tamanho do frame
                 ByteBuffer size = ByteBuffer.allocate(4);
@@ -50,8 +51,6 @@ public class ServerHandler implements Runnable{
 
                 DatagramPacket frame = new DatagramPacket(b, frame_length, this.address, Ports.DEFAULT_CLIENT_UDP_PORT);
                 ds.send(frame);
-
-                System.out.println("Frame enviado com tamanho: " + frame_length);
 
                 Thread.sleep(40);
             }
@@ -105,6 +104,4 @@ public class ServerHandler implements Runnable{
         }
         System.out.println("Cliente " + this.address + " desconectado com sucesso");
     }
-
-
 }

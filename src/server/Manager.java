@@ -2,14 +2,18 @@ package server;
 
 import java.util.HashMap;
 import java.io.File;
+import java.io.IOException;
 
+import utils.Streaming;
 import utils.VideoStream;
 
 public class Manager {
+    private HashMap<VideoStream, Streaming> streamingCurrently;
     private HashMap<String, VideoStream> videos;
     private String filepath;
 
     public Manager(String filepath){
+        this.streamingCurrently = new HashMap<>();
         this.videos = new HashMap<>();
         this.filepath = filepath;
         this.addVideosFromFolder();
@@ -32,6 +36,17 @@ public class Manager {
                 System.out.println(e.getMessage());
             }
         }
+    }
+
+    public int stream(VideoStream video, byte[] data) throws Exception{
+        if(!this.streamingCurrently.containsKey(video)){
+            Streaming s = new Streaming(video);
+            this.streamingCurrently.put(video, s);
+
+            Thread t = new Thread(s);
+            t.start();
+        }
+        return this.streamingCurrently.get(video).getFrame(data);
     }
 
     public VideoStream getVideo(String name){
