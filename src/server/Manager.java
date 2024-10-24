@@ -38,14 +38,37 @@ public class Manager {
         }
     }
 
-    public int stream(VideoStream video, byte[] data) throws Exception{
+    public void connectUser(VideoStream video){
+        this.streamingCurrently.get(video).addUser();
+    }
+
+    public void disconnectUser(VideoStream video){
+        this.streamingCurrently.get(video).removeUser();
+    }
+
+    public void createStream(VideoStream video){
         if(!this.streamingCurrently.containsKey(video)){
             Streaming s = new Streaming(video);
             this.streamingCurrently.put(video, s);
 
-            Thread t = new Thread(s);
+            Thread t = new Thread(() -> {
+                Thread st = new Thread(s);
+                st.start();
+                try{
+                    st.join();
+                    streamingCurrently.remove(video);
+                    System.out.println("Streaming do video: " + video.getFilename() + " fechada.");
+                }
+                catch(InterruptedException e){
+                    System.out.println(e.getMessage());
+                }
+            });
             t.start();
         }
+        else connectUser(video);
+    }
+
+    public int stream(VideoStream video, byte[] data) throws Exception{
         return this.streamingCurrently.get(video).getFrame(data);
     }
 

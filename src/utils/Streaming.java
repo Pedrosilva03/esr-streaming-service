@@ -30,6 +30,14 @@ public class Streaming implements Runnable{
         return this.lastFrameSize;
     }
 
+    public void addUser(){
+        this.usersConnected++;
+    }
+
+    public void removeUser(){
+        this.usersConnected--;
+    }
+
     public void run(){
         while(this.usersConnected > 0){
             try{

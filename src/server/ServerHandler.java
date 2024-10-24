@@ -36,6 +36,7 @@ public class ServerHandler implements Runnable{
 
     private void sendPackets(){
         this.activeStreaming = true;
+        this.database.createStream(video);
         while(activeStreaming){
             try{
                 byte b[] = new byte[15000];
@@ -60,6 +61,7 @@ public class ServerHandler implements Runnable{
                 break;
             }
         }
+        this.database.disconnectUser(video);
     }
 
     public void run(){
