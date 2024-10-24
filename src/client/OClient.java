@@ -5,6 +5,7 @@ import javax.imageio.ImageIO;
 
 import utils.Messages;
 import utils.Ports;
+import utils.Extras;
 import utils.RTPpacket;
 import utils.VideoStream;
 
@@ -168,7 +169,7 @@ public class OClient {
             ByteArrayInputStream bis = new ByteArrayInputStream(packet.getData(), 0, packet.getLength());
             BufferedImage frame = ImageIO.read(bis);
 
-            currentFrame = frame;
+            currentFrame = Extras.convertYUVtoRGB(frame);
             videoPanel.repaint();
         }
         stopVideo();
