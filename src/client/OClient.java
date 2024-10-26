@@ -105,6 +105,7 @@ public class OClient {
             public void actionPerformed(ActionEvent e){
                 // Stop button logic
                 playing = false;
+                stopVideo();
             }
         });
 
@@ -172,7 +173,6 @@ public class OClient {
             currentFrame = Extras.convertYUVtoRGB(frame);
             videoPanel.repaint();
         }
-        stopVideo();
     }
 
     private static void requestVideo(String video) throws IOException{
@@ -181,7 +181,8 @@ public class OClient {
     }
 
     private static void stopVideo(){
-
+        disconnectFromServer();
+        System.exit(0);
     }
 
     public static void main(String[] args) {

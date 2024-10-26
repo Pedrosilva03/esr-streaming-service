@@ -21,6 +21,11 @@ public class VideoStream {
         filenamee = filename;
     }
 
+    public void resetVideo() throws Exception{
+        fis.close();
+        fis = new FileInputStream(filenamee);
+    }
+
     //-----------------------------------
     // getnextframe
     //returns the next frame as an array of byte and the size of the frame
@@ -35,8 +40,7 @@ public class VideoStream {
         int loopCheck = fis.read(frame_length,0,5);
 
         if(loopCheck == -1){
-            fis.close();
-            fis = new FileInputStream(filenamee);
+            resetVideo();
             fis.read(frame_length,0,5);
         }
 

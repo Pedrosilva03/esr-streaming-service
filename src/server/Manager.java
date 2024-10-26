@@ -58,8 +58,9 @@ public class Manager {
                     st.join();
                     streamingCurrently.remove(video);
                     System.out.println("Streaming do video: " + video.getFilename() + " fechada.");
+                    video.resetVideo();
                 }
-                catch(InterruptedException e){
+                catch(Exception e){
                     System.out.println(e.getMessage());
                 }
             });
