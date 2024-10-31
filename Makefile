@@ -7,7 +7,7 @@ UTILS_SRC := $(SRC_DIR)/utils/*.java
 CLIENT_SRC := $(SRC_DIR)/client/*.java
 NODE_SRC := $(SRC_DIR)/node/*.java
 SERVER_SRC := $(SRC_DIR)/server/*.java
-CLASSPATH := -cp $(SRC_DIR)
+CLASSPATH := -cp $(SRC_DIR):lib/*
 
 # Compilação
 all: client node server

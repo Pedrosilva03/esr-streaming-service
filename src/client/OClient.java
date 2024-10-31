@@ -54,6 +54,8 @@ public class OClient {
 
     private static BufferedImage currentFrame;
 
+    private static List<String> neighbours;
+
     private static void setupWindow(String title){
         // Main window
         window = new JFrame(title);
@@ -142,7 +144,7 @@ public class OClient {
         return dis.readInt();
     }
 
-    private static void recieveVideo() throws IOException{
+    private static void recieveVideo(String videoString) throws IOException{
         playing = true;
         while(playing){
             while(pause){
@@ -170,14 +172,17 @@ public class OClient {
             ByteArrayInputStream bis = new ByteArrayInputStream(packet.getData(), 0, packet.getLength());
             BufferedImage frame = ImageIO.read(bis);
 
-            currentFrame = Extras.convertYUVtoRGB(frame);
+            if(videoString.equals("movie.Mjpeg"))
+                currentFrame = Extras.convertYUVtoRGB(frame);
+            else
+                currentFrame = frame;
             videoPanel.repaint();
         }
     }
 
     private static void requestVideo(String video) throws IOException{
         dos.writeUTF(Messages.generateReadyMessage());
-        recieveVideo();
+        recieveVideo(video);
     }
 
     private static void stopVideo(){
@@ -185,8 +190,14 @@ public class OClient {
         System.exit(0);
     }
 
+    private static void importNeighbours() throws IOException{
+        // Obter o seu próprio IP
+        //neighbours = Extras.getNeighborsIPs(Extras.getLocalAddress());
+    }
+
     public static void main(String[] args) {
         try{
+            //importNeighbours();
             setupConnection();
             try{
                 udpSocket = new DatagramSocket(Ports.DEFAULT_CLIENT_UDP_PORT);

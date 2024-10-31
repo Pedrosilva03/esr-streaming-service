@@ -1,6 +1,20 @@
 package utils;
 
 import java.awt.image.BufferedImage;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+
+//import org.json.JSONArray;
+//import org.json.JSONObject;
+//import org.json.JSONTokener;
 
 public class Extras {
     public static BufferedImage convertYUVtoRGB(BufferedImage yuvImage) {
@@ -45,4 +59,76 @@ public class Extras {
         
         return rgbImage;
     }
+
+    /*
+     * Função alternativa para obter o IP porque o localhost dá NullPointerException
+     */
+    public static String getLocalAddress(){
+        try{
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            while (interfaces.hasMoreElements()) {
+                NetworkInterface networkInterface = interfaces.nextElement();
+                
+                // Ignorar interfaces de loopback ou interfaces desligadas
+                if (networkInterface.isUp() && !networkInterface.isLoopback()) {
+                    Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
+                    
+                    while (addresses.hasMoreElements()) {
+                        InetAddress address = addresses.nextElement();
+                        String ipAddress = address.getHostAddress();
+                        
+                        // Filtrar apenas endereços IPv4 (evitar endereços IPv6)
+                        if (!ipAddress.contains(":")) {
+                            return ipAddress;
+                        }
+                    }
+                }
+            }
+        } 
+        catch(SocketException se){
+            System.out.println("Erro ao listar as interfaces de rede.");
+            se.printStackTrace();
+        }
+        return null;
+    }
+
+    /*public static List<String> getNeighborsIPs(String nodeIP) {
+        String jsonFilePath = "config/neighbours.json";
+        List<String> neighborsIPs = new ArrayList<>();
+
+        try {
+            // Lê o conteúdo do arquivo JSON
+            String jsonContent = new String(Files.readAllBytes(Paths.get(jsonFilePath)));
+
+            // Cria um objeto JSON a partir do conteúdo lido
+            JSONObject jsonObject = new JSONObject(jsonContent);
+
+            // Acessa o array de nós
+            JSONArray nodesArray = jsonObject.getJSONArray("nodes");
+
+            // Procura pelo nó que corresponde ao IP fornecido
+            for (int i = 0; i < nodesArray.length(); i++) {
+                JSONObject node = nodesArray.getJSONObject(i);
+
+                // Compara o IP do nó com o IP fornecido
+                if (node.getString("ip").equals(nodeIP)) {
+                    // Obtém a lista de vizinhos
+                    JSONArray neighborsArray = node.getJSONArray("neighbors");
+
+                    // Adiciona cada IP vizinho à lista
+                    for (int j = 0; j < neighborsArray.length(); j++) {
+                        neighborsIPs.add(neighborsArray.getString(j));
+                    }
+
+                    // Saia do loop, pois já encontrou o nó correspondente
+                    break;
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return neighborsIPs;
+    }*/
 }
