@@ -43,7 +43,10 @@ public class Manager {
     }
 
     public void disconnectUser(VideoStream video){
-        this.streamingCurrently.get(video).removeUser();
+        try{
+            this.streamingCurrently.get(video).removeUser();
+        }
+        catch(NullPointerException e){}
     }
 
     public void createStream(VideoStream video){

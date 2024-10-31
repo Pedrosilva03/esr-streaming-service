@@ -57,8 +57,7 @@ public class ServerHandler implements Runnable{
             }
             catch(Exception e){
                 System.out.println("Error getting frame to stream");
-                e.printStackTrace();
-                break;
+                return;
             }
         }
         this.database.disconnectUser(video);
@@ -86,7 +85,6 @@ public class ServerHandler implements Runnable{
                 }
 
                 if(requestSplit[1].equals("READY")){
-                    // TODO: Send video packets if confirmed
                     if(this.video != null){
                         Thread t = new Thread(() -> this.sendPackets());
                         t.start();

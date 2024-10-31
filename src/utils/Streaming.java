@@ -46,6 +46,7 @@ public class Streaming implements Runnable{
             }
             catch(Exception e){
                 System.out.println("Erro ao streamar video: " + video.getFilename() + ". A cancelar...");
+                break;
             }
         }
     }
