@@ -192,12 +192,12 @@ public class OClient {
 
     private static void importNeighbours() throws IOException{
         // Obter o seu próprio IP
-        //neighbours = Extras.getNeighborsIPs(Extras.getLocalAddress());
+        neighbours = Extras.getNeighborsIPs(Extras.getLocalAddress());
     }
 
     public static void main(String[] args) {
         try{
-            //importNeighbours();
+            importNeighbours();
             setupConnection();
             try{
                 udpSocket = new DatagramSocket(Ports.DEFAULT_CLIENT_UDP_PORT);

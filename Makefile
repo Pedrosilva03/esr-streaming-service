@@ -13,7 +13,7 @@ CLASSPATH := -cp $(SRC_DIR):lib/*
 all: client node server
 
 utils:
-	$(JAVAC) $(UTILS_SRC)
+	$(JAVAC) $(CLASSPATH) $(UTILS_SRC)
 
 client: utils
 	$(JAVAC) $(CLASSPATH) $(CLIENT_SRC)

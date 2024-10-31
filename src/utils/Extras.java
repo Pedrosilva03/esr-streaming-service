@@ -12,9 +12,9 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
-//import org.json.JSONArray;
-//import org.json.JSONObject;
-//import org.json.JSONTokener;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
 public class Extras {
     public static BufferedImage convertYUVtoRGB(BufferedImage yuvImage) {
@@ -92,7 +92,7 @@ public class Extras {
         return null;
     }
 
-    /*public static List<String> getNeighborsIPs(String nodeIP) {
+    public static List<String> getNeighborsIPs(String nodeIP) {
         String jsonFilePath = "config/neighbours.json";
         List<String> neighborsIPs = new ArrayList<>();
 
@@ -130,5 +130,5 @@ public class Extras {
         }
 
         return neighborsIPs;
-    }*/
+    }
 }
