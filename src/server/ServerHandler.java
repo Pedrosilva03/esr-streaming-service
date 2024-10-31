@@ -39,7 +39,7 @@ public class ServerHandler implements Runnable{
         this.database.createStream(video);
         while(activeStreaming){
             try{
-                byte b[] = new byte[15000];
+                byte b[] = new byte[65535];
                 int frame_length = this.database.stream(video, b);
                 //int frame_length = this.video.getnextframe(b);
 

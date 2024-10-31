@@ -16,7 +16,7 @@ public class Streaming implements Runnable{
 
     public Streaming(VideoStream video){
         this.video = video;
-        this.lastFrameData = new byte[15000];
+        this.lastFrameData = new byte[65535];
         this.lastFrameSize = 0;
         this.usersConnected = 1;
     }
