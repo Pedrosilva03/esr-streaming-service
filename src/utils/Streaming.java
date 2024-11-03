@@ -14,6 +14,19 @@ public class Streaming implements Runnable{
 
     private int usersConnected;
 
+    // Lógica focada para o streaming no lado de um nodo intermédio (sem acesso ao ficheiro do vídeo, recebe frames de outro nodo/servidor)
+    public Streaming(){
+        this.lastFrameData = new byte[65535];
+        this.lastFrameSize = 0;
+        this.usersConnected = 1;
+    }
+
+    public void setFrame(byte[] newFrame, int newFrameSize){
+        System.arraycopy(newFrame, 0, this.lastFrameData, 0, this.lastFrameData.length);
+        this.lastFrameSize = newFrameSize;
+    }
+
+    // Lógica focada para o streaming no lado do servidor (com acesso ao ficheiro do vídeo)
     public Streaming(VideoStream video){
         this.video = video;
         this.lastFrameData = new byte[65535];

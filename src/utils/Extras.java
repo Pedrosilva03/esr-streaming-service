@@ -93,7 +93,7 @@ public class Extras {
     }
 
     public static List<String> getNeighborsIPs(String nodeIP) {
-        String jsonFilePath = "config/neighbours.json";
+        String jsonFilePath = "config/bootstrapper.json";
         List<String> neighborsIPs = new ArrayList<>();
 
         try {
