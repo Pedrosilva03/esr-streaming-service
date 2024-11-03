@@ -1,9 +1,11 @@
 package server;
 
 import java.util.HashMap;
+import java.util.List;
 import java.io.File;
 import java.io.IOException;
 
+import utils.Extras;
 import utils.Streaming;
 import utils.VideoStream;
 
@@ -12,11 +14,14 @@ public class Manager {
     private HashMap<String, VideoStream> videos;
     private String filepath;
 
+    private List<String> neighbours;
+
     public Manager(String filepath){
         this.streamingCurrently = new HashMap<>();
         this.videos = new HashMap<>();
         this.filepath = filepath;
         this.addVideosFromFolder();
+        this.neighbours = Extras.getNeighborsIPs(Extras.getLocalAddress());
     }
 
     public void addVideo(String name, VideoStream video){

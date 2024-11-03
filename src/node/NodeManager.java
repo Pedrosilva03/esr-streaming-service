@@ -1,14 +1,19 @@
 package node;
 
 import java.util.HashMap;
+import java.util.List;
 
+import utils.Extras;
 import utils.Streaming;
 
 public class NodeManager {
     private HashMap<String, Streaming> streamingCurrently;
 
+    private List<String> neighbours;
+
     public NodeManager(){
         this.streamingCurrently = new HashMap<>();
+        this.neighbours = Extras.getNeighborsIPs(Extras.getLocalAddress());
     }
 
     public void connectUser(String video){
