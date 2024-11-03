@@ -224,6 +224,10 @@ public class OClient {
                 setupWindow("SRTube");
                 requestVideo(video);
             }
+            else{
+                System.out.println("Video não encontrado no sistema");
+                disconnectFromServer();
+            }
         }
         catch(IOException e){
             System.out.println("Conexão perdida");
