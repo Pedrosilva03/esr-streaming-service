@@ -3,12 +3,14 @@ package node;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 
 import utils.Messages;
+import utils.Ports;
 
 public class NodeHandler implements Runnable{
     private Socket s;
@@ -21,6 +23,7 @@ public class NodeHandler implements Runnable{
     private InetAddress address;
 
     private String video;
+    private boolean activeStreaming;
 
     public NodeHandler(Socket s, NodeManager manager) throws IOException{
         this.s = s;
@@ -33,7 +36,32 @@ public class NodeHandler implements Runnable{
     }
 
     private void sendPackets(){
+        this.activeStreaming = true;
+        this.manager.createStream(this.video);
+        while(activeStreaming){
+            try{                
+                byte b[] = new byte[65535];
+                int frame_length = this.manager.stream(video, b);
+                //int frame_length = this.video.getnextframe(b);
 
+                // Envio do tamanho do frame
+                ByteBuffer size = ByteBuffer.allocate(4);
+                size.putInt(frame_length);
+
+                DatagramPacket frame_size = new DatagramPacket(size.array(), size.array().length, this.address, Ports.DEFAULT_CLIENT_UDP_PORT);
+                ds.send(frame_size);
+
+                DatagramPacket frame = new DatagramPacket(b, frame_length, this.address, Ports.DEFAULT_CLIENT_UDP_PORT);
+                ds.send(frame);
+
+                Thread.sleep(40);
+            }
+            catch(Exception e){
+                System.out.println("Error getting frame to stream");
+                return;
+            }
+        }
+        this.manager.disconnectUser(video);
     }
 
     public void run(){
@@ -46,9 +74,12 @@ public class NodeHandler implements Runnable{
                 String[] requestSplit = request.split(" ");
 
                 if(requestSplit[1].equals(Messages.check_video)){
-                    if(true){
-
+                    if(this.manager.checkVideoExists(requestSplit[2])){
+                        this.video = requestSplit[2];
+                        this.dos.writeInt(1);
                     }
+                    else this.dos.writeInt(0);
+                    this.dos.flush();
                 }
                 else if(requestSplit[1].equals("READY")){
                     if(this.video != null){
@@ -58,6 +89,7 @@ public class NodeHandler implements Runnable{
                 }
                 else if(requestSplit[1].equals(Messages.disconnect)){
                     status = false;
+                    this.activeStreaming = false;
                     continue;
                 }
             }

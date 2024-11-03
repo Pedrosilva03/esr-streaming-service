@@ -8,6 +8,7 @@ import java.util.Arrays;
  */
 public class Streaming implements Runnable{
     private VideoStream video;
+    private String videoName; // Para stream no nodo
 
     private byte[] lastFrameData;
     private int lastFrameSize;
@@ -15,10 +16,12 @@ public class Streaming implements Runnable{
     private int usersConnected;
 
     // Lógica focada para o streaming no lado de um nodo intermédio (sem acesso ao ficheiro do vídeo, recebe frames de outro nodo/servidor)
-    public Streaming(){
+    public Streaming(String videoName){
         this.lastFrameData = new byte[65535];
         this.lastFrameSize = 0;
         this.usersConnected = 1;
+        this.video = null;
+        this.videoName = videoName;
     }
 
     public void setFrame(byte[] newFrame, int newFrameSize){
@@ -58,7 +61,8 @@ public class Streaming implements Runnable{
                 Thread.sleep(40);
             }
             catch(Exception e){
-                System.out.println("Erro ao streamar video: " + video.getFilename() + ". A cancelar...");
+                if(video != null) System.out.println("Erro ao streamar video: " + video.getFilename() + ". A cancelar...");
+                else System.out.println("Erro ao streamar video: " + videoName + ". A cancelar...");
                 break;
             }
         }
