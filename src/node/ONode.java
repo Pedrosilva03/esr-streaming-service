@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import utils.Extras;
 import utils.Ports;
 
 public class ONode {
@@ -12,7 +13,7 @@ public class ONode {
         try{
             ss = new ServerSocket(Ports.DEFAULT_NODE_TCP_PORT);
 
-            System.out.println("Nodo ativo em: " + ss.getInetAddress().getHostAddress() + " na porta " + ss.getLocalPort());
+            System.out.println("Nodo ativo em: " + Extras.getLocalAddress() + " na porta " + ss.getLocalPort());
 
             NodeManager manager = new NodeManager();
 

@@ -54,10 +54,15 @@ public class Streaming implements Runnable{
         this.usersConnected--;
     }
 
+    private int requestVideoToNeighbour(){
+        return 0;
+    }
+
     public void run(){
         while(this.usersConnected > 0){
             try{
-                this.lastFrameSize = this.video.getnextframe(this.lastFrameData);
+                if(video != null) this.lastFrameSize = this.video.getnextframe(this.lastFrameData);
+                else this.lastFrameSize = this.requestVideoToNeighbour();
                 Thread.sleep(40);
             }
             catch(Exception e){

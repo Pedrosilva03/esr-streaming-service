@@ -1,5 +1,6 @@
 package server;
 
+import utils.Extras;
 import utils.Ports;
 
 import java.io.IOException;
@@ -12,7 +13,7 @@ public class Server {
         try {
             ss = new ServerSocket(Ports.DEFAULT_SERVER_PORT);
 
-            System.out.println("Servidor de streaming ativo em: " + ss.getInetAddress().getHostAddress() + " na porta " + ss.getLocalPort());
+            System.out.println("Servidor de streaming ativo em: " + Extras.getLocalAddress() + " na porta " + ss.getLocalPort());
 
             Manager database = new Manager("videos");
 

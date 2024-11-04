@@ -1,5 +1,6 @@
 package node;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -11,9 +12,11 @@ public class NodeManager {
 
     private List<String> neighbours;
 
+    public HashMap<Integer, String> viewedMessages;
     public NodeManager(){
         this.streamingCurrently = new HashMap<>();
         this.neighbours = Extras.getNeighborsIPs(Extras.getLocalAddress());
+        this.viewedMessages = new HashMap<>();
     }
 
     public void connectUser(String video){
@@ -27,12 +30,20 @@ public class NodeManager {
         catch(NullPointerException e){}
     }
 
-    public boolean checkVideoExists(String video){
+    public boolean checkVideoExists(String requestAddress, String video, String message, List<String> neighboursWithVideo){
         if(!this.streamingCurrently.containsKey(video)){
-            // TODO: Check with the neighbours if the video exists somewhere
-            return false;
+            for(String neighbour: this.neighbours){
+                if(neighbour.equals(requestAddress)) continue;
+                if(NodeRecursive.checkVideoOnNode(message, neighbour)) neighboursWithVideo.add(neighbour);
+            }
+            if(neighboursWithVideo.isEmpty()) return false;
+            else return true;
         }
         else return true;
+    }
+
+    private void closeStream(){
+        // TODO: Avisar o streamer que já não precisa de streamar para aqui
     }
 
     public void createStream(String video){
@@ -46,7 +57,8 @@ public class NodeManager {
                     tt.join();
                     this.streamingCurrently.remove(video);
                     System.out.println("Streaming do video: " + video + " fechada.");
-                    // TODO: Avisar o streamer que já não precisa de streamar para aqui
+
+                    this.closeStream();
                 }
                 catch(InterruptedException e){
                     System.out.println(e.getMessage());

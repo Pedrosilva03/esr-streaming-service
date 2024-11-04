@@ -16,12 +16,16 @@ public class Manager {
 
     private List<String> neighbours;
 
+    public HashMap<Integer, String> viewedMessages;
+
     public Manager(String filepath){
         this.streamingCurrently = new HashMap<>();
         this.videos = new HashMap<>();
         this.filepath = filepath;
         this.addVideosFromFolder();
         this.neighbours = Extras.getNeighborsIPs(Extras.getLocalAddress());
+        this.viewedMessages = new HashMap<>();
+
     }
 
     public void addVideo(String name, VideoStream video){

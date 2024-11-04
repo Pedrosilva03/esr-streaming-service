@@ -79,7 +79,7 @@ public class Extras {
                         
                         // Filtrar apenas endereços IPv4 (evitar endereços IPv6)
                         if (!ipAddress.contains(":")) {
-                            return ipAddress;
+                            if(networkInterface.getName().equals("eth0")) return ipAddress;
                         }
                     }
                 }

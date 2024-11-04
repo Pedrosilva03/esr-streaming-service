@@ -134,6 +134,7 @@ public class OClient {
     private static void setupConnection() throws IOException{
         tcpSocket = new Socket("10.0.0.10", Ports.DEFAULT_SERVER_PORT); // Socket para o servidor
         //tcpSocket = new Socket("10.0.19.2", Ports.DEFAULT_NODE_TCP_PORT); // Socket para o PoP2
+        //tcpSocket = new Socket("10.0.13.2", Ports.DEFAULT_NODE_TCP_PORT); // Socket para o O2
 
         dis = new DataInputStream(tcpSocket.getInputStream());
         dos = new DataOutputStream(tcpSocket.getOutputStream());

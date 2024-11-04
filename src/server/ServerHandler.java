@@ -74,6 +74,14 @@ public class ServerHandler implements Runnable{
 
                 String[] requestSplit = request.split(" ");
 
+                if(this.database.viewedMessages.containsKey(Integer.parseInt(requestSplit[0]))){
+                    this.dos.writeInt(0);
+                    this.dos.flush();
+                    continue;
+                }
+
+                this.database.viewedMessages.put(Integer.parseInt(requestSplit[0]), request);
+
                 if(requestSplit[1].equals(Messages.check_video)){
                     if(this.database.checkVideoExists(requestSplit[2])){
                         requestedVideo = requestSplit[2];

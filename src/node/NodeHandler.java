@@ -8,6 +8,8 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 import utils.Messages;
 import utils.Ports;
@@ -25,6 +27,8 @@ public class NodeHandler implements Runnable{
     private String video;
     private boolean activeStreaming;
 
+    private List<String> neighboursWithVideo;
+
     public NodeHandler(Socket s, NodeManager manager) throws IOException{
         this.s = s;
         this.manager = manager;
@@ -33,6 +37,7 @@ public class NodeHandler implements Runnable{
         this.dos = new DataOutputStream(s.getOutputStream());
         this.address = s.getInetAddress();
         this.video = new String();
+        this.neighboursWithVideo = new ArrayList<>();
     }
 
     private void sendPackets(){
@@ -73,8 +78,16 @@ public class NodeHandler implements Runnable{
 
                 String[] requestSplit = request.split(" ");
 
+                if(this.manager.viewedMessages.containsKey(Integer.parseInt(requestSplit[0]))){
+                    this.dos.writeInt(0);
+                    this.dos.flush();
+                    continue;
+                }
+
+                this.manager.viewedMessages.put(Integer.parseInt(requestSplit[0]), request);
+
                 if(requestSplit[1].equals(Messages.check_video)){
-                    if(this.manager.checkVideoExists(requestSplit[2])){
+                    if(this.manager.checkVideoExists(address.getHostAddress(), requestSplit[2], request, this.neighboursWithVideo)){
                         this.video = requestSplit[2];
                         this.dos.writeInt(1);
                     }
