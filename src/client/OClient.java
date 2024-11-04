@@ -7,7 +7,6 @@ import utils.Messages;
 import utils.Ports;
 import utils.Extras;
 import utils.RTPpacket;
-import utils.VideoStream;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -27,7 +26,6 @@ import java.io.IOException;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.ByteArrayInputStream;
-import java.nio.ByteBuffer;
 
 public class OClient {
 
@@ -158,27 +156,36 @@ public class OClient {
                 }
             }
 
-            // Recebe o tamanho do packet
-            byte[] frameSizeByte = new byte[4];
-            DatagramPacket frameSizePacket = new DatagramPacket(frameSizeByte, frameSizeByte.length);
-            udpSocket.receive(frameSizePacket);
-
-            // Converter os bytes recebidos para um inteiro
-            ByteBuffer wrapped = ByteBuffer.wrap(frameSizeByte);
-            int frameSize = wrapped.getInt();
-
-            byte[] data = new byte[frameSize];
-            DatagramPacket packet = new DatagramPacket(data, data.length);
+            // Receber pacote RTP
+            byte[] packetData = new byte[65535]; // Buffer grande o suficiente para o cabeçalho + payload
+            DatagramPacket packet = new DatagramPacket(packetData, packetData.length);
             udpSocket.receive(packet);
 
-            ByteArrayInputStream bis = new ByteArrayInputStream(packet.getData(), 0, packet.getLength());
-            BufferedImage frame = ImageIO.read(bis);
+            // Extrair o RTPpacket
+            RTPpacket rtpPacket = new RTPpacket(packet.getData(), packet.getLength());
 
-            if(videoString.equals("movie.Mjpeg"))
-                currentFrame = Extras.convertYUVtoRGB(frame);
-            else
-                currentFrame = frame;
-            videoPanel.repaint();
+            // Verificar se o payload é do tipo esperado
+            if (rtpPacket.getpayloadtype() == 26) { // Supondo que 26 é o tipo de payload do vídeo (ajustar conforme necessário)
+                int frameSize = rtpPacket.getpayload_length();
+                
+                // Extrair payload (dados do frame)
+                byte[] frameData = new byte[frameSize];
+                rtpPacket.getpayload(frameData);
+
+                // Converter os dados do frame para uma imagem
+                ByteArrayInputStream bis = new ByteArrayInputStream(frameData);
+                BufferedImage frame = ImageIO.read(bis);
+
+                // Converter para RGB, se necessário, e atualizar o painel de vídeo
+                if (videoString.equals("movie.Mjpeg"))
+                    currentFrame = Extras.convertYUVtoRGB(frame);
+                else
+                    currentFrame = frame;
+                
+                videoPanel.repaint();
+            } else {
+                System.out.println("Recebido pacote com tipo de payload inesperado: " + rtpPacket.getpayloadtype());
+            }
         }
     }
 

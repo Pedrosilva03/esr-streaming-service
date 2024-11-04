@@ -39,19 +39,22 @@ public class ServerHandler implements Runnable{
         this.database.createStream(video);
         while(activeStreaming){
             try{
-                byte b[] = new byte[65535];
-                int frame_length = this.database.stream(video, b);
+                byte[] frameData = new byte[65535];
+                int frameLength = this.database.stream(video, frameData);
                 //int frame_length = this.video.getnextframe(b);
 
-                // Envio do tamanho do frame
-                ByteBuffer size = ByteBuffer.allocate(4);
-                size.putInt(frame_length);
+                int sequenceNumber = 0;
+                int timestamp = (int) System.currentTimeMillis();
 
-                DatagramPacket frame_size = new DatagramPacket(size.array(), size.array().length, this.address, Ports.DEFAULT_CLIENT_UDP_PORT);
-                ds.send(frame_size);
+                RTPpacket rtpPacket = new RTPpacket(26, sequenceNumber, timestamp, frameData, frameLength);
 
-                DatagramPacket frame = new DatagramPacket(b, frame_length, this.address, Ports.DEFAULT_CLIENT_UDP_PORT);
-                ds.send(frame);
+                byte[] packetData = new byte[rtpPacket.getlength()];
+                int packetLength = rtpPacket.getpacket(packetData);
+
+                DatagramPacket packet = new DatagramPacket(packetData, packetLength, this.address, Ports.DEFAULT_CLIENT_UDP_PORT);
+                ds.send(packet);
+
+                sequenceNumber++;
 
                 Thread.sleep(40);
             }
