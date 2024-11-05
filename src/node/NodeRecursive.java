@@ -39,8 +39,4 @@ public class NodeRecursive {
             return false;
         }
     }
-
-    public static int getFrameFromNode(String message, String address){
-        return 0;
-    }
 }

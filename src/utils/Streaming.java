@@ -1,7 +1,12 @@
 package utils;
 
-import java.util.HashMap;
-import java.util.Arrays;
+import java.util.List;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.Socket;
+import java.net.SocketException;
 
 /*
  * Class that abstracts all the streaming logic for mutiple usage
@@ -9,6 +14,8 @@ import java.util.Arrays;
 public class Streaming implements Runnable{
     private VideoStream video;
     private String videoName; // Para stream no nodo
+
+    private DatagramSocket udpSocket;
 
     private byte[] lastFrameData;
     private int lastFrameSize;
@@ -22,11 +29,46 @@ public class Streaming implements Runnable{
         this.usersConnected = 1;
         this.video = null;
         this.videoName = videoName;
+        try{
+            this.udpSocket = new DatagramSocket(Ports.DEFAULT_NODE_UDP_PORT);
+        }
+        catch(SocketException e){
+            System.out.println(e.getMessage());
+        }
     }
 
     public void setFrame(byte[] newFrame, int newFrameSize){
-        System.arraycopy(newFrame, 0, this.lastFrameData, 0, this.lastFrameData.length);
+        System.arraycopy(newFrame, 0, this.lastFrameData, 0, newFrameSize);
         this.lastFrameSize = newFrameSize;
+    }
+
+    private int requestVideoToNeighbour(){
+        try{
+            // Receber pacote RTP
+            byte[] packetData = new byte[65535]; // Buffer grande o suficiente para o cabeçalho + payload
+            DatagramPacket packet = new DatagramPacket(packetData, packetData.length);
+            udpSocket.receive(packet);
+
+            // Extrair o RTPpacket
+            RTPpacket rtpPacket = new RTPpacket(packet.getData(), packet.getLength());
+
+            // Verificar se o payload é do tipo esperado
+            if (rtpPacket.getpayloadtype() == 26) { // Supondo que 26 é o tipo de payload do vídeo (ajustar conforme necessário)
+                int frameSize = rtpPacket.getpayload_length();
+                
+                // Extrair payload (dados do frame)
+                byte[] frameData = new byte[frameSize];
+                rtpPacket.getpayload(frameData);
+
+                this.setFrame(frameData, frameSize);
+
+                return frameSize;
+            }
+        }
+        catch(Exception e){
+            System.out.println(e.getMessage());
+        }
+        return 0;
     }
 
     // Lógica focada para o streaming no lado do servidor (com acesso ao ficheiro do vídeo)
@@ -54,10 +96,6 @@ public class Streaming implements Runnable{
         this.usersConnected--;
     }
 
-    private int requestVideoToNeighbour(){
-        return 0;
-    }
-
     public void run(){
         while(this.usersConnected > 0){
             try{
@@ -66,10 +104,11 @@ public class Streaming implements Runnable{
                 Thread.sleep(40);
             }
             catch(Exception e){
-                if(video != null) System.out.println("Erro ao streamar video: " + video.getFilename() + ". A cancelar...");
-                else System.out.println("Erro ao streamar video: " + videoName + ". A cancelar...");
+                if(video != null) System.out.println("Erro ao streamar video: " + video.getFilename() + ". A cancelar..."); // Caso para o servidor
+                else System.out.println("Erro ao streamar video: " + videoName + ". A cancelar..."); // Caso para o nodo
                 break;
             }
         }
+        if(this.udpSocket != null) this.udpSocket.close();
     }
 }

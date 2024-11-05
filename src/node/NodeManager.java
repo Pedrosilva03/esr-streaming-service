@@ -1,10 +1,17 @@
 package node;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import utils.Extras;
+import utils.Messages;
+import utils.Ports;
 import utils.Streaming;
 
 public class NodeManager {
@@ -42,29 +49,67 @@ public class NodeManager {
         else return true;
     }
 
-    private void closeStream(){
-        // TODO: Avisar o streamer que já não precisa de streamar para aqui
+    private void closeStream(Socket aux, DataInputStream dis, DataOutputStream dos) throws IOException{
+        dos.writeUTF(Messages.generateDisconnectMessage());
+        dos.flush();
+
+        dis.close();
+        dos.close();
+        aux.close();
     }
 
-    public void createStream(String video){
+    public void createStream(String requestAddress, String video, List<String> neighboursWithVideo, String request){
         if(!this.streamingCurrently.containsKey(video)){
-            Streaming s = new Streaming(video);
-            this.streamingCurrently.put(video, s);
-            Thread t = new Thread(() -> {
-                Thread tt = new Thread(s); // TODO: A classe streaming vai pedir a um vizinho por frames
-                tt.start();
-                try{
-                    tt.join();
-                    this.streamingCurrently.remove(video);
-                    System.out.println("Streaming do video: " + video + " fechada.");
+            List<String> neighbour;
+            if(!neighboursWithVideo.isEmpty()) neighbour = Extras.pingNeighbours(requestAddress, neighboursWithVideo);
+            else neighbour = Extras.pingNeighbours(requestAddress, this.neighbours);
 
-                    this.closeStream();
+            for(String neighbourFast: neighbour){
+                try{
+                    Socket aux = new Socket(neighbourFast, Ports.DEFAULT_NODE_TCP_PORT);
+                    aux.setSoTimeout(200);
+                    DataInputStream dis = new DataInputStream(aux.getInputStream());
+                    DataOutputStream dos = new DataOutputStream(aux.getOutputStream());
+
+                    dos.writeUTF(request);
+                    dos.flush();
+
+                    try{
+                        if(dis.readInt() == 0){
+                            dos.writeUTF(Messages.generateDisconnectMessage());
+                            dos.flush();
+
+                            dis.close();
+                            dos.close();
+                            aux.close();
+                            continue;
+                        }
+                    }
+                    catch(SocketTimeoutException e){}
+                
+                    Streaming s = new Streaming(video);
+                    this.streamingCurrently.put(video, s);
+                    Thread t = new Thread(() -> {
+                        Thread tt = new Thread(s);
+                        tt.start();
+                        try{
+                            tt.join();
+                            this.streamingCurrently.remove(video);
+                            System.out.println("Streaming do video: " + video + " fechada.");
+
+                            this.closeStream(aux, dis, dos);
+                        }
+                        catch(InterruptedException | IOException e){
+                            System.out.println(e.getMessage());
+                        }
+                    });
+                    t.start();
+                    break;
                 }
-                catch(InterruptedException e){
+                catch(Exception e){
                     System.out.println(e.getMessage());
                 }
-            });
-            t.start();
+            }
         }
         else this.connectUser(video);
     }

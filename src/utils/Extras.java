@@ -1,16 +1,22 @@
 package utils;
 
 import java.awt.image.BufferedImage;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -130,5 +136,48 @@ public class Extras {
         }
 
         return neighborsIPs;
+    }
+
+    public static List<String> pingNeighbours(String address, List<String> neighbours){
+        HashMap<String, Long> fastestNodes = new HashMap<>();
+
+        String fastest = new String();
+        long currentTime = 999999;
+        for(String neighbour: neighbours){
+            if(neighbour.equals(address)) continue;
+            try{
+                Socket aux = new Socket(neighbour, Ports.DEFAULT_NODE_TCP_PORT);
+                DataInputStream dis = new DataInputStream(aux.getInputStream());
+                DataOutputStream dos = new DataOutputStream(aux.getOutputStream());
+
+                dos.writeUTF(Messages.generatePingMessage());
+                dos.flush();
+                long start = System.currentTimeMillis();
+
+                aux.setSoTimeout(1000);
+                dis.readInt();
+                aux.setSoTimeout(0);
+                long diff = System.currentTimeMillis() - start;
+
+                fastestNodes.put(neighbour, Long.valueOf(diff));
+
+                dos.writeUTF(Messages.generateDisconnectMessage());
+                dos.flush();
+
+                dis.close();
+                dos.close();
+                aux.close();
+            }
+            catch(IOException e){
+                //System.out.println("Erro ao conectar-se ao nodo: " + neighbour + " " + e.getMessage());
+            }
+        }
+        List<Entry<String, Long>> fastestNodesSorted = new ArrayList<>(fastestNodes.entrySet());
+        fastestNodesSorted.sort(Entry.comparingByValue());
+        List<String> fastestAddresses = new ArrayList<>();
+        for(Entry<String, Long> addresss: fastestNodesSorted){
+            fastestAddresses.add(addresss.getKey());
+        }
+        return fastestAddresses;
     }
 }

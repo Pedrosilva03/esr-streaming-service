@@ -130,7 +130,8 @@ public class OClient {
     }
 
     private static void setupConnection() throws IOException{
-        tcpSocket = new Socket("10.0.0.10", Ports.DEFAULT_SERVER_PORT); // Socket para o servidor
+        //tcpSocket = new Socket("10.0.0.10", Ports.DEFAULT_SERVER_PORT); // Socket para o servidor
+        tcpSocket = new Socket("10.0.18.2", Ports.DEFAULT_NODE_TCP_PORT); // Socket para o PoP1
         //tcpSocket = new Socket("10.0.19.2", Ports.DEFAULT_NODE_TCP_PORT); // Socket para o PoP2
         //tcpSocket = new Socket("10.0.13.2", Ports.DEFAULT_NODE_TCP_PORT); // Socket para o O2
 
@@ -190,7 +191,7 @@ public class OClient {
     }
 
     private static void requestVideo(String video) throws IOException{
-        dos.writeUTF(Messages.generateReadyMessage());
+        dos.writeUTF(Messages.generateReadyMessage(video));
         recieveVideo(video);
     }
 

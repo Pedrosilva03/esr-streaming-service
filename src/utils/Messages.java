@@ -9,6 +9,7 @@ public class Messages {
     public static final String check_video = "CHECK_VIDEO"; // Mensagem para verificar se um nodo ou o servidor têm o video.
     public static final String disconnect = "DISCONNECT"; // Mensagem para desconectar do servidor
     public static final String ready = "READY"; // Mensagem para desconectar do servidor
+    public static final String ping = "PING"; // Mensagem para desconectar do servidor
     
     public static Random randomIDGenerator = new Random();
 
@@ -32,11 +33,22 @@ public class Messages {
         return sb.toString();
     }
 
-    public static String generateReadyMessage(){
+    public static String generateReadyMessage(String videoName){
         StringBuilder sb = new StringBuilder();
         sb.append(randomIDGenerator.nextInt(65536) + 1);
         sb.append(" ");
         sb.append(ready);
+        sb.append(" ");
+        sb.append(videoName);
+
+        return sb.toString();
+    }
+
+    public static String generatePingMessage(){
+        StringBuilder sb = new StringBuilder();
+        sb.append(randomIDGenerator.nextInt(65536) + 1);
+        sb.append(" ");
+        sb.append(ping);
 
         return sb.toString();
     }

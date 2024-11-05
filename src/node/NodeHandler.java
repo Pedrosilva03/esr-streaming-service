@@ -13,6 +13,7 @@ import java.util.List;
 
 import utils.Messages;
 import utils.Ports;
+import utils.RTPpacket;
 
 public class NodeHandler implements Runnable{
     private Socket s;
@@ -40,24 +41,27 @@ public class NodeHandler implements Runnable{
         this.neighboursWithVideo = new ArrayList<>();
     }
 
-    private void sendPackets(){
+    private void sendPackets(String request){
         this.activeStreaming = true;
-        this.manager.createStream(this.video);
+        this.manager.createStream(this.address.getHostAddress(), this.video, this.neighboursWithVideo, request);
         while(activeStreaming){
             try{                
-                byte b[] = new byte[65535];
-                int frame_length = this.manager.stream(video, b);
+                byte[] frameData = new byte[65535];
+                int frameLength = this.manager.stream(video, frameData);
                 //int frame_length = this.video.getnextframe(b);
 
-                // Envio do tamanho do frame
-                ByteBuffer size = ByteBuffer.allocate(4);
-                size.putInt(frame_length);
+                int sequenceNumber = 0;
+                int timestamp = (int) System.currentTimeMillis();
 
-                DatagramPacket frame_size = new DatagramPacket(size.array(), size.array().length, this.address, Ports.DEFAULT_CLIENT_UDP_PORT);
-                ds.send(frame_size);
+                RTPpacket rtpPacket = new RTPpacket(26, sequenceNumber, timestamp, frameData, frameLength);
 
-                DatagramPacket frame = new DatagramPacket(b, frame_length, this.address, Ports.DEFAULT_CLIENT_UDP_PORT);
-                ds.send(frame);
+                byte[] packetData = new byte[rtpPacket.getlength()];
+                int packetLength = rtpPacket.getpacket(packetData);
+
+                DatagramPacket packet = new DatagramPacket(packetData, packetLength, this.address, Ports.DEFAULT_CLIENT_UDP_PORT);
+                ds.send(packet);
+
+                sequenceNumber++;
 
                 Thread.sleep(40);
             }
@@ -78,6 +82,8 @@ public class NodeHandler implements Runnable{
 
                 String[] requestSplit = request.split(" ");
 
+                System.out.println(requestSplit[1]);
+
                 if(this.manager.viewedMessages.containsKey(Integer.parseInt(requestSplit[0]))){
                     this.dos.writeInt(0);
                     this.dos.flush();
@@ -95,8 +101,9 @@ public class NodeHandler implements Runnable{
                     this.dos.flush();
                 }
                 else if(requestSplit[1].equals("READY")){
+                    this.video = new String(requestSplit[2]);
                     if(this.video != null){
-                        Thread t = new Thread(() -> this.sendPackets());
+                        Thread t = new Thread(() -> this.sendPackets(request));
                         t.start();
                     }
                 }
@@ -105,12 +112,30 @@ public class NodeHandler implements Runnable{
                     this.activeStreaming = false;
                     continue;
                 }
+                else if(requestSplit[1].equals(Messages.ping)){
+                    this.dos.writeInt(1);
+                    this.dos.flush();
+                }
             }
             catch(Exception e){
                 System.out.println("Cliente " + this.address + " desconectado inesperadamente");
+                this.closeSocket();
                 return;
             }
         }
+        this.closeSocket();
         System.out.println("Cliente " + this.address + " desconectado com sucesso");
+    }
+
+    private void closeSocket(){
+        try{
+            this.dis.close();
+            this.dos.close();
+            this.s.close();
+            this.ds.close();
+        }
+        catch(IOException e){
+            System.out.println(e.getMessage());
+        }
     }
 }
