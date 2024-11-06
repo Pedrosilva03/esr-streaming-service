@@ -34,7 +34,7 @@ public class ServerHandler implements Runnable{
         this.video = null;
     }
 
-    private void sendPackets(){
+    private void sendPackets(String portString){
         this.activeStreaming = true;
         this.database.createStream(video);
         while(activeStreaming){
@@ -51,7 +51,7 @@ public class ServerHandler implements Runnable{
                 byte[] packetData = new byte[rtpPacket.getlength()];
                 int packetLength = rtpPacket.getpacket(packetData);
 
-                DatagramPacket packet = new DatagramPacket(packetData, packetLength, this.address, Ports.DEFAULT_CLIENT_UDP_PORT);
+                DatagramPacket packet = new DatagramPacket(packetData, packetLength, this.address, Integer.parseInt(portString));
                 ds.send(packet);
 
                 sequenceNumber++;
@@ -100,7 +100,7 @@ public class ServerHandler implements Runnable{
                 if(requestSplit[1].equals("READY")){
                     this.video = this.database.getVideo(requestSplit[2]);
                     if(this.video != null){
-                        Thread t = new Thread(() -> this.sendPackets());
+                        Thread t = new Thread(() -> this.sendPackets(requestSplit[3]));
                         t.start();
                     }
                 }

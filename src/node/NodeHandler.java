@@ -58,7 +58,7 @@ public class NodeHandler implements Runnable{
                 byte[] packetData = new byte[rtpPacket.getlength()];
                 int packetLength = rtpPacket.getpacket(packetData);
 
-                DatagramPacket packet = new DatagramPacket(packetData, packetLength, this.address, Ports.DEFAULT_CLIENT_UDP_PORT);
+                DatagramPacket packet = new DatagramPacket(packetData, packetLength, this.address, Integer.parseInt(request.split(" ")[3]));
                 ds.send(packet);
 
                 sequenceNumber++;
@@ -119,6 +119,7 @@ public class NodeHandler implements Runnable{
             }
             catch(Exception e){
                 System.out.println("Cliente " + this.address + " desconectado inesperadamente");
+                this.manager.disconnectUser(video);
                 this.closeSocket();
                 return;
             }

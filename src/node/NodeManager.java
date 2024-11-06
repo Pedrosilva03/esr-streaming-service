@@ -3,7 +3,9 @@ package node;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.DatagramSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,11 +21,19 @@ public class NodeManager {
 
     private List<String> neighbours;
 
+    private DatagramSocket udpSocket;
+
     public HashMap<Integer, String> viewedMessages;
     public NodeManager(){
         this.streamingCurrently = new HashMap<>();
         this.neighbours = Extras.getNeighborsIPs(Extras.getLocalAddress());
         this.viewedMessages = new HashMap<>();
+        try{
+            this.udpSocket = new DatagramSocket(Ports.DEFAULT_NODE_UDP_PORT);
+        }
+        catch(SocketException e){
+            System.out.println("Erro ao abrir socket UDP");
+        }
     }
 
     public void connectUser(String video){
@@ -71,6 +81,8 @@ public class NodeManager {
                     DataInputStream dis = new DataInputStream(aux.getInputStream());
                     DataOutputStream dos = new DataOutputStream(aux.getOutputStream());
 
+                    DatagramSocket udpSocket = new DatagramSocket(Integer.parseInt(request.split(" ")[3]));
+
                     dos.writeUTF(request);
                     dos.flush();
 
@@ -87,7 +99,7 @@ public class NodeManager {
                     }
                     catch(SocketTimeoutException e){}
                 
-                    Streaming s = new Streaming(video);
+                    Streaming s = new Streaming(video, udpSocket);
                     this.streamingCurrently.put(video, s);
                     Thread t = new Thread(() -> {
                         Thread tt = new Thread(s);

@@ -191,7 +191,7 @@ public class OClient {
     }
 
     private static void requestVideo(String video) throws IOException{
-        dos.writeUTF(Messages.generateReadyMessage(video));
+        dos.writeUTF(Messages.generateReadyMessage(video, udpSocket.getLocalPort()));
         recieveVideo(video);
     }
 
@@ -210,7 +210,7 @@ public class OClient {
             importNeighbours();
             setupConnection();
             try{
-                udpSocket = new DatagramSocket(Ports.DEFAULT_CLIENT_UDP_PORT);
+                udpSocket = new DatagramSocket(Extras.generateRandomPort());
             }
             catch(IOException e){
                 System.out.println("Erro ao iniciar conexão para receção");

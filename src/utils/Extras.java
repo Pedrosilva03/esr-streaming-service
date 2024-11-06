@@ -17,6 +17,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Random;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -179,5 +180,10 @@ public class Extras {
             fastestAddresses.add(addresss.getKey());
         }
         return fastestAddresses;
+    }
+
+    public static int generateRandomPort() {
+        Random random = new Random();
+        return 1024 + random.nextInt(49151 - 1024 + 1);
     }
 }

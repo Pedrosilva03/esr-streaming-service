@@ -33,13 +33,15 @@ public class Messages {
         return sb.toString();
     }
 
-    public static String generateReadyMessage(String videoName){
+    public static String generateReadyMessage(String videoName, int port){
         StringBuilder sb = new StringBuilder();
         sb.append(randomIDGenerator.nextInt(65536) + 1);
         sb.append(" ");
         sb.append(ready);
         sb.append(" ");
         sb.append(videoName);
+        sb.append(" ");
+        sb.append(port);
 
         return sb.toString();
     }

@@ -23,18 +23,13 @@ public class Streaming implements Runnable{
     private int usersConnected;
 
     // Lógica focada para o streaming no lado de um nodo intermédio (sem acesso ao ficheiro do vídeo, recebe frames de outro nodo/servidor)
-    public Streaming(String videoName){
+    public Streaming(String videoName, DatagramSocket udpSocket){
         this.lastFrameData = new byte[65535];
         this.lastFrameSize = 0;
         this.usersConnected = 1;
         this.video = null;
         this.videoName = videoName;
-        try{
-            this.udpSocket = new DatagramSocket(Ports.DEFAULT_NODE_UDP_PORT);
-        }
-        catch(SocketException e){
-            System.out.println(e.getMessage());
-        }
+        this.udpSocket = udpSocket;
     }
 
     public void setFrame(byte[] newFrame, int newFrameSize){
