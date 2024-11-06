@@ -131,9 +131,12 @@ public class OClient {
 
     private static void setupConnection() throws IOException{
         //tcpSocket = new Socket("10.0.0.10", Ports.DEFAULT_SERVER_PORT); // Socket para o servidor
-        tcpSocket = new Socket("10.0.18.2", Ports.DEFAULT_NODE_TCP_PORT); // Socket para o PoP1
+        //tcpSocket = new Socket("10.0.18.2", Ports.DEFAULT_NODE_TCP_PORT); // Socket para o PoP1
         //tcpSocket = new Socket("10.0.19.2", Ports.DEFAULT_NODE_TCP_PORT); // Socket para o PoP2
+        //tcpSocket = new Socket("10.0.21.2", Ports.DEFAULT_NODE_TCP_PORT); // Socket para o PoP3
         //tcpSocket = new Socket("10.0.13.2", Ports.DEFAULT_NODE_TCP_PORT); // Socket para o O2
+
+        tcpSocket = new Socket(neighbours.get(0), Ports.DEFAULT_NODE_TCP_PORT);
 
         dis = new DataInputStream(tcpSocket.getInputStream());
         dos = new DataOutputStream(tcpSocket.getOutputStream());
@@ -201,8 +204,7 @@ public class OClient {
     }
 
     private static void importNeighbours() throws IOException{
-        // Obter o seu próprio IP
-        neighbours = Extras.getNeighborsIPs(Extras.getLocalAddress());
+        neighbours = Extras.pingNeighbours(null, Extras.getNeighborsIPs(Extras.getLocalAddress()));
     }
 
     public static void main(String[] args) {

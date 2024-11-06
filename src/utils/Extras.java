@@ -145,7 +145,7 @@ public class Extras {
         String fastest = new String();
         long currentTime = 999999;
         for(String neighbour: neighbours){
-            if(neighbour.equals(address)) continue;
+            if(address != null && neighbour.equals(address)) continue;
             try{
                 Socket aux = new Socket(neighbour, Ports.DEFAULT_NODE_TCP_PORT);
                 DataInputStream dis = new DataInputStream(aux.getInputStream());
