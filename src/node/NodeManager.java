@@ -59,13 +59,15 @@ public class NodeManager {
         else return true;
     }
 
-    private void closeStream(Socket aux, DataInputStream dis, DataOutputStream dos) throws IOException{
+    private void closeStream(DatagramSocket udpSocket, Socket aux, DataInputStream dis, DataOutputStream dos) throws IOException{
         dos.writeUTF(Messages.generateDisconnectMessage());
         dos.flush();
 
         dis.close();
         dos.close();
         aux.close();
+
+        udpSocket.close();
     }
 
     public void createStream(String requestAddress, String video, List<String> neighboursWithVideo, String request){
@@ -94,6 +96,8 @@ public class NodeManager {
                             dis.close();
                             dos.close();
                             aux.close();
+
+                            udpSocket.close();
                             continue;
                         }
                     }
@@ -104,12 +108,13 @@ public class NodeManager {
                     Thread t = new Thread(() -> {
                         Thread tt = new Thread(s);
                         tt.start();
+                        System.out.println("Streaming do video: " + video + " iniciada.");
                         try{
                             tt.join();
                             this.streamingCurrently.remove(video);
                             System.out.println("Streaming do video: " + video + " fechada.");
 
-                            this.closeStream(aux, dis, dos);
+                            this.closeStream(udpSocket, aux, dis, dos);
                         }
                         catch(InterruptedException | IOException e){
                             System.out.println(e.getMessage());

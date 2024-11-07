@@ -142,7 +142,7 @@ public class OClient {
         dos = new DataOutputStream(tcpSocket.getOutputStream());
     }
 
-    private static int checkVideo(String video) throws IOException{
+    private static int checkVideo(String video) throws IOException, IndexOutOfBoundsException{
         dos.writeUTF(Messages.generateCheckVideoMessage(video));
         dos.flush();
         return dis.readInt();
@@ -222,6 +222,10 @@ public class OClient {
         catch(IOException e){
             System.out.println("Erro ao conectar-se");
             System.exit(1);
+        }
+        catch(IndexOutOfBoundsException e){
+            System.out.println("Vizinhos não encontrados");
+            System.exit(0);
         }
 
         try{

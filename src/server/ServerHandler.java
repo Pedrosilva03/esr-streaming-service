@@ -77,13 +77,13 @@ public class ServerHandler implements Runnable{
 
                 String[] requestSplit = request.split(" ");
 
-                System.out.println(requestSplit[1]);
-
                 if(this.database.viewedMessages.containsKey(Integer.parseInt(requestSplit[0]))){
                     this.dos.writeInt(0);
                     this.dos.flush();
                     continue;
                 }
+
+                System.out.println(requestSplit[0] + " " + requestSplit[1]);
 
                 this.database.viewedMessages.put(Integer.parseInt(requestSplit[0]), request);
 
@@ -117,6 +117,7 @@ public class ServerHandler implements Runnable{
             }
             catch(IOException e){
                 System.out.println("Cliente " + this.address + " desconectado inesperadamente");
+                activeStreaming = false;
                 return;
             }
         }

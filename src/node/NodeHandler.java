@@ -82,13 +82,13 @@ public class NodeHandler implements Runnable{
 
                 String[] requestSplit = request.split(" ");
 
-                System.out.println(requestSplit[1]);
-
                 if(this.manager.viewedMessages.containsKey(Integer.parseInt(requestSplit[0]))){
                     this.dos.writeInt(0);
                     this.dos.flush();
                     continue;
                 }
+
+                System.out.println(requestSplit[0] + " " + requestSplit[1]);
 
                 this.manager.viewedMessages.put(Integer.parseInt(requestSplit[0]), request);
 
@@ -100,7 +100,7 @@ public class NodeHandler implements Runnable{
                     else this.dos.writeInt(0);
                     this.dos.flush();
                 }
-                else if(requestSplit[1].equals("READY")){
+                else if(requestSplit[1].equals("READY")){ // TODO: Trocar a string pela variável
                     this.video = new String(requestSplit[2]);
                     if(this.video != null){
                         Thread t = new Thread(() -> this.sendPackets(request));
@@ -120,6 +120,7 @@ public class NodeHandler implements Runnable{
             catch(Exception e){
                 System.out.println("Cliente " + this.address + " desconectado inesperadamente");
                 this.manager.disconnectUser(video);
+                this.activeStreaming = false;
                 this.closeSocket();
                 return;
             }
