@@ -68,7 +68,7 @@ public class NodeHandler implements Runnable{
                 return;
             }
         }
-        this.manager.disconnectUser(video);
+        this.manager.disconnectUser(this.address.getHostAddress(), video);
     }
 
     public void run(){
@@ -117,7 +117,6 @@ public class NodeHandler implements Runnable{
             }
             catch(Exception e){
                 System.out.println("Cliente " + this.address + " desconectado inesperadamente");
-                this.manager.disconnectUser(video);
                 this.activeStreaming = false;
                 this.closeSocket();
                 return;

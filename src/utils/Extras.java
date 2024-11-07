@@ -18,6 +18,7 @@ import java.util.Map.Entry;
 import java.util.Random;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Extras {
@@ -180,5 +181,43 @@ public class Extras {
     public static int generateRandomPort() {
         Random random = new Random();
         return 1024 + random.nextInt(49151 - 1024 + 1);
+    }
+
+    public static String getHost(String ip){
+        String jsonFilePath = "config/hostnames.json";
+
+        try {
+            // Lê o conteúdo do arquivo JSON
+            String jsonContent = new String(Files.readAllBytes(Paths.get(jsonFilePath)));
+
+            // Cria um objeto JSON a partir do conteúdo lido
+            JSONObject jsonObject = new JSONObject(jsonContent);
+
+            // Acessa o array de nós
+            JSONArray hostsArray = jsonObject.getJSONArray("hosts");
+
+            // Procura pelo nó que corresponde ao IP fornecido
+            for (int i = 0; i < hostsArray.length(); i++) {
+                JSONObject host = hostsArray.getJSONObject(i);
+
+                // Compara o IP do nó com o IP fornecido
+                JSONArray ips = host.getJSONArray("ips");
+                for(int j = 0; j < ips.length(); j++){
+                    try{
+                        if(ips.getString(j).equals(ip)){
+                            return host.getString("host");
+                        }
+                    }
+                    catch(JSONException e){
+                        continue;
+                    }   
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 }

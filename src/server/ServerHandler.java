@@ -35,7 +35,7 @@ public class ServerHandler implements Runnable{
 
     private void sendPackets(String portString){
         this.activeStreaming = true;
-        this.database.createStream(video);
+        this.database.createStream(this.address.getHostAddress(), video);
         while(activeStreaming){
             try{
                 byte[] frameData = new byte[65535];
@@ -62,7 +62,7 @@ public class ServerHandler implements Runnable{
                 return;
             }
         }
-        this.database.disconnectUser(video);
+        this.database.disconnectUser(this.address.getHostAddress(), video);
     }
 
     private void closeSocket(){

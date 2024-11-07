@@ -5,7 +5,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.Socket;
-import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import java.util.List;
@@ -14,6 +13,7 @@ import utils.Extras;
 import utils.Messages;
 import utils.Ports;
 import utils.Streaming;
+import utils.UpdateVisualizer;
 
 public class NodeManager {
     private HashMap<String, Streaming> streamingCurrently;
@@ -31,9 +31,10 @@ public class NodeManager {
         this.streamingCurrently.get(video).addUser();
     }
 
-    public void disconnectUser(String video){
+    public void disconnectUser(String requestAddress, String video){
         try{
             this.streamingCurrently.get(video).removeUser();
+            UpdateVisualizer.updateVisualizer(Extras.getHost(requestAddress), Extras.getHost(Extras.getLocalAddress()), 0);
         }
         catch(NullPointerException e){}
     }
@@ -104,6 +105,7 @@ public class NodeManager {
                             tt.join();
                             this.streamingCurrently.remove(video);
                             System.out.println("Streaming do video: " + video + " fechada.");
+                            UpdateVisualizer.updateVisualizer(Extras.getHost(requestAddress), Extras.getHost(Extras.getLocalAddress()), 0);
 
                             this.closeStream(udpSocket, aux, dis, dos);
                         }
@@ -120,6 +122,7 @@ public class NodeManager {
             }
         }
         else this.connectUser(video);
+        UpdateVisualizer.updateVisualizer(Extras.getHost(requestAddress), Extras.getHost(Extras.getLocalAddress()), 1);
     }
 
     public int stream(String video, byte[] data) throws Exception{

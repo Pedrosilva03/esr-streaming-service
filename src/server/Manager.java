@@ -6,6 +6,7 @@ import java.io.File;
 
 import utils.Extras;
 import utils.Streaming;
+import utils.UpdateVisualizer;
 import utils.VideoStream;
 
 public class Manager {
@@ -50,14 +51,15 @@ public class Manager {
         this.streamingCurrently.get(video).addUser();
     }
 
-    public void disconnectUser(VideoStream video){
+    public void disconnectUser(String requestAddress, VideoStream video){
         try{
             this.streamingCurrently.get(video).removeUser();
+            UpdateVisualizer.updateVisualizer(Extras.getHost(requestAddress), Extras.getHost(Extras.getLocalAddress()), 0);
         }
         catch(NullPointerException e){}
     }
 
-    public void createStream(VideoStream video){
+    public void createStream(String requestAddress, VideoStream video){
         if(!this.streamingCurrently.containsKey(video)){
             Streaming s = new Streaming(video);
             this.streamingCurrently.put(video, s);
@@ -70,6 +72,8 @@ public class Manager {
                     streamingCurrently.remove(video);
                     System.out.println("Streaming do video: " + video.getFilename() + " fechada.");
                     video.resetVideo();
+                    UpdateVisualizer.updateVisualizer(Extras.getHost(requestAddress), Extras.getHost(Extras.getLocalAddress()), 0);
+
                 }
                 catch(Exception e){
                     System.out.println(e.getMessage());
@@ -78,6 +82,7 @@ public class Manager {
             t.start();
         }
         else connectUser(video);
+        UpdateVisualizer.updateVisualizer(Extras.getHost(requestAddress), Extras.getHost(Extras.getLocalAddress()), 1);
     }
 
     public int stream(VideoStream video, byte[] data) throws Exception{
