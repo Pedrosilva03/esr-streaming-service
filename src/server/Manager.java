@@ -3,7 +3,6 @@ package server;
 import java.util.HashMap;
 import java.util.List;
 import java.io.File;
-import java.io.IOException;
 
 import utils.Extras;
 import utils.Streaming;

@@ -3,9 +3,7 @@ package utils;
 import java.awt.image.BufferedImage;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -21,7 +19,6 @@ import java.util.Random;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
 public class Extras {
     public static BufferedImage convertYUVtoRGB(BufferedImage yuvImage) {
@@ -142,8 +139,6 @@ public class Extras {
     public static List<String> pingNeighbours(String address, List<String> neighbours){
         HashMap<String, Long> fastestNodes = new HashMap<>();
 
-        String fastest = new String();
-        long currentTime = 999999;
         for(String neighbour: neighbours){
             if(address != null && neighbour.equals(address)) continue;
             try{

@@ -7,12 +7,10 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 import utils.Messages;
-import utils.Ports;
 import utils.RTPpacket;
 
 public class NodeHandler implements Runnable{
@@ -100,7 +98,7 @@ public class NodeHandler implements Runnable{
                     else this.dos.writeInt(0);
                     this.dos.flush();
                 }
-                else if(requestSplit[1].equals("READY")){ // TODO: Trocar a string pela variável
+                else if(requestSplit[1].equals(Messages.ready)){
                     this.video = new String(requestSplit[2]);
                     if(this.video != null){
                         Thread t = new Thread(() -> this.sendPackets(request));

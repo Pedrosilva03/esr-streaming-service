@@ -7,7 +7,6 @@ import java.net.DatagramSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -21,19 +20,11 @@ public class NodeManager {
 
     private List<String> neighbours;
 
-    private DatagramSocket udpSocket;
-
     public HashMap<Integer, String> viewedMessages;
     public NodeManager(){
         this.streamingCurrently = new HashMap<>();
         this.neighbours = Extras.getNeighborsIPs(Extras.getLocalAddress());
         this.viewedMessages = new HashMap<>();
-        try{
-            this.udpSocket = new DatagramSocket(Ports.DEFAULT_NODE_UDP_PORT);
-        }
-        catch(SocketException e){
-            System.out.println("Erro ao abrir socket UDP");
-        }
     }
 
     public void connectUser(String video){

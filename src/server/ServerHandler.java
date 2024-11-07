@@ -6,7 +6,6 @@ import java.net.DatagramPacket;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.nio.ByteBuffer;
 import java.io.IOException;
 import java.net.InetAddress;
 
@@ -66,6 +65,17 @@ public class ServerHandler implements Runnable{
         this.database.disconnectUser(video);
     }
 
+    private void closeSocket(){
+        try{
+            this.dis.close();
+            this.dos.close();
+            this.s.close();
+        }
+        catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
     public void run(){
         boolean status = true;
         String requestedVideo;
@@ -97,7 +107,7 @@ public class ServerHandler implements Runnable{
                     this.dos.flush();
                 }
 
-                if(requestSplit[1].equals("READY")){
+                if(requestSplit[1].equals(Messages.ready)){
                     this.video = this.database.getVideo(requestSplit[2]);
                     if(this.video != null){
                         Thread t = new Thread(() -> this.sendPackets(requestSplit[3]));
@@ -118,9 +128,11 @@ public class ServerHandler implements Runnable{
             catch(IOException e){
                 System.out.println("Cliente " + this.address + " desconectado inesperadamente");
                 activeStreaming = false;
+                this.closeSocket();
                 return;
             }
         }
         System.out.println("Cliente " + this.address + " desconectado com sucesso");
+        this.closeSocket();
     }
 }
