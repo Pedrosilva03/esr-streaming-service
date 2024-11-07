@@ -19,8 +19,6 @@ public class UpdateVisualizer {
             dos.close();
             aux.close();
         }
-        catch(IOException e){
-            e.printStackTrace();
-        }
+        catch(IOException e){}
     }
 }

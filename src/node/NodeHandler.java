@@ -65,6 +65,7 @@ public class NodeHandler implements Runnable{
             }
             catch(Exception e){
                 System.out.println("Error getting frame to stream");
+                this.manager.disconnectUser(this.address.getHostAddress(), video);
                 return;
             }
         }

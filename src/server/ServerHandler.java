@@ -59,6 +59,7 @@ public class ServerHandler implements Runnable{
             }
             catch(Exception e){
                 System.out.println("Error getting frame to stream");
+                this.database.disconnectUser(this.address.getHostAddress(), video);
                 return;
             }
         }

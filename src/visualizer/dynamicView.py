@@ -122,7 +122,7 @@ def start_listener():
     listener_thread.start()
 
 root = tk.Tk()
-canvas = tk.Canvas(root, width=1280, height=720)
+canvas = tk.Canvas(root, width=1080, height=720)
 canvas.pack()
 
 draw_network(canvas)
