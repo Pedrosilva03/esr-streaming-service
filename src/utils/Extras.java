@@ -21,7 +21,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/*
+ * Classe com funções auxiliares ao funcionamento do sistema
+ * Não são funcionalidades concretas do sistema
+ */
 public class Extras {
+    /*
+     * Função que converte o valores YUV de uma imagem para RGB
+     * Uma imagem que já é RGB não deve ser convertida
+     */
     public static BufferedImage convertYUVtoRGB(BufferedImage yuvImage) {
         if(yuvImage == null) return null;
         int width = yuvImage.getWidth();
@@ -66,7 +74,7 @@ public class Extras {
     }
 
     /*
-     * Função alternativa para obter o IP porque o localhost dá NullPointerException
+     * Função alternativa para obter o IP (por simplicidade, retorna sempre o IP associado à interface eth0)
      */
     public static String getLocalAddress(){
         try{
@@ -97,6 +105,9 @@ public class Extras {
         return null;
     }
 
+    /*
+     * Função que acede ao bootstrapper para obter os vizinhos de um determinado node
+     */
     public static List<String> getNeighborsIPs(String nodeIP) {
         String jsonFilePath = "config/bootstrapper.json";
         List<String> neighborsIPs = new ArrayList<>();
@@ -125,7 +136,7 @@ public class Extras {
                         neighborsIPs.add(neighborsArray.getString(j));
                     }
 
-                    // Saia do loop, pois já encontrou o nó correspondente
+                    // Sai do loop, pois já encontrou o nó correspondente
                     break;
                 }
             }
@@ -137,11 +148,14 @@ public class Extras {
         return neighborsIPs;
     }
 
+    /*
+     * Função que dá ping aos vizinhos de um nodo, ordenando-os por ordem decrescente de RTT
+     */
     public static List<String> pingNeighbours(String address, List<String> neighbours){
         HashMap<String, Long> fastestNodes = new HashMap<>();
 
         for(String neighbour: neighbours){
-            if(address != null && neighbour.equals(address)) continue;
+            if(address != null && neighbour.equals(address)) continue; // No caso de pings recursivos, um nodo não dá ping a quem lhe mandou pedido (null se for o cliente a iniciar pedido)
             try{
                 Socket aux = new Socket(neighbour, Ports.DEFAULT_NODE_TCP_PORT);
                 DataInputStream dis = new DataInputStream(aux.getInputStream());
@@ -149,15 +163,16 @@ public class Extras {
 
                 dos.writeUTF(Messages.generatePingMessage());
                 dos.flush();
-                long start = System.currentTimeMillis();
+                long start = System.currentTimeMillis(); // Timestamp de quando o ping foi enviado
 
-                aux.setSoTimeout(1000);
+                aux.setSoTimeout(1000); // Timeout de 1 segundo (detetar vizinhos desativados ou com problemas)
                 dis.readInt();
                 aux.setSoTimeout(0);
-                long diff = System.currentTimeMillis() - start;
+                long diff = System.currentTimeMillis() - start; // Timestamp de quando o ping obteve resposta
 
-                fastestNodes.put(neighbour, Long.valueOf(diff));
+                fastestNodes.put(neighbour, Long.valueOf(diff)); // Coloca o RTT associado ao vizinho correspondente no mapa
 
+                // Finaliza a conexão TCP e liberta recursos
                 dos.writeUTF(Messages.generateDisconnectMessage());
                 dos.flush();
 
@@ -169,6 +184,7 @@ public class Extras {
                 //System.out.println("Erro ao conectar-se ao nodo: " + neighbour + " " + e.getMessage());
             }
         }
+        // Lógica que organiza os vizinhos por ordem cresente de RTT, retornando apenas os vizinhos organizados
         List<Entry<String, Long>> fastestNodesSorted = new ArrayList<>(fastestNodes.entrySet());
         fastestNodesSorted.sort(Entry.comparingByValue());
         List<String> fastestAddresses = new ArrayList<>();
@@ -178,11 +194,18 @@ public class Extras {
         return fastestAddresses;
     }
 
+    /*
+     * Função que gera um número de porta aleatório dentro do intervalo de portas não reservadas ao sistema (1024-49151)
+     */
     public static int generateRandomPort() {
         Random random = new Random();
         return 1024 + random.nextInt(49151 - 1024 + 1);
     }
 
+    /*
+     * Função que retorna o nome de um host através do seu IP
+     * Utiliza o ficheiro de configuração da rede "hostnames.json" que pode ser encontrado na pasta "config"
+     */
     public static String getHost(String ip){
         String jsonFilePath = "config/hostnames.json";
 
@@ -204,8 +227,8 @@ public class Extras {
                 JSONArray ips = host.getJSONArray("ips");
                 for(int j = 0; j < ips.length(); j++){
                     try{
-                        if(ips.getString(j).equals(ip)){
-                            return host.getString("host");
+                        if(ips.getString(j).equals(ip)){ // Verifica se o IP lido corresponde ao pedido
+                            return host.getString("host"); // Se sim, então o IP pedido pertence a este host, retornando-o
                         }
                     }
                     catch(JSONException e){

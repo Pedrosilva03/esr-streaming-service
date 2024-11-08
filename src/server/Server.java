@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+/*
+ * Servidor básico
+ */
 public class Server {
     public static ServerSocket ss;
     public static void main(String[] args) {

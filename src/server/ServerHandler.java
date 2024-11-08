@@ -11,6 +11,9 @@ import java.net.InetAddress;
 
 import utils.*;
 
+/*
+ * Classe que atende a pedidos de um utilizador conectado
+ */
 public class ServerHandler implements Runnable{
     private Socket s;
     private DatagramSocket ds;
@@ -33,15 +36,19 @@ public class ServerHandler implements Runnable{
         this.video = null;
     }
 
+    /*
+     * Classe responsável por criar uma stream caso ela esteja inativa e enviar frames (packets RTP)
+     */
     private void sendPackets(String portString){
         this.activeStreaming = true;
-        this.database.createStream(this.address.getHostAddress(), video);
+        this.database.createStream(this.address.getHostAddress(), video); // Cria a stream (endereço do nodo que pediu serve para atualizar o simulador)
         while(activeStreaming){
             try{
                 byte[] frameData = new byte[65535];
-                int frameLength = this.database.stream(video, frameData);
+                int frameLength = this.database.stream(video, frameData); // Lê o frame mais recente
                 //int frame_length = this.video.getnextframe(b);
 
+                // Criação do packet RTP
                 int sequenceNumber = 0;
                 int timestamp = (int) System.currentTimeMillis();
 
@@ -55,17 +62,20 @@ public class ServerHandler implements Runnable{
 
                 sequenceNumber++;
 
-                Thread.sleep(40);
+                Thread.sleep(40); // 40 milissegundos para simular 25fps
             }
             catch(Exception e){
                 System.out.println("Error getting frame to stream");
-                this.database.disconnectUser(this.address.getHostAddress(), video);
+                this.database.disconnectUser(this.address.getHostAddress(), video); // Caso haja algum erro, desconecta o utilizador para evitar streams abertas infinitamente
                 return;
             }
         }
         this.database.disconnectUser(this.address.getHostAddress(), video);
     }
 
+    /*
+     * Função responsável por libertar recursos associados à conexão
+     */
     private void closeSocket(){
         try{
             this.dis.close();
@@ -77,6 +87,9 @@ public class ServerHandler implements Runnable{
         }
     }
 
+    /*
+     * Função que espera ativamente por pedidos do cliente conectado
+     */
     public void run(){
         boolean status = true;
         String requestedVideo;
@@ -88,16 +101,17 @@ public class ServerHandler implements Runnable{
 
                 String[] requestSplit = request.split(" ");
 
-                if(this.database.viewedMessages.containsKey(Integer.parseInt(requestSplit[0]))){
-                    this.dos.writeInt(0);
+                if(this.database.viewedMessages.containsKey(Integer.parseInt(requestSplit[0]))){ // Verifica se a mensagem que recebeu é repetida ou não (evitar redundância e loops)
+                    this.dos.writeInt(0); // Avisa o cliente que a mensagem já foi lida
                     this.dos.flush();
                     continue;
                 }
 
                 System.out.println(requestSplit[0] + " " + requestSplit[1]);
 
-                this.database.viewedMessages.put(Integer.parseInt(requestSplit[0]), request);
+                this.database.viewedMessages.put(Integer.parseInt(requestSplit[0]), request); // Se é a primeira vez que lê a mensagem, adiciona-a à base de dados
 
+                // Verificação se um vídeo existe na base de dados ou não (retorna 1 se sim, 0 se não)
                 if(requestSplit[1].equals(Messages.check_video)){
                     if(this.database.checkVideoExists(requestSplit[2])){
                         requestedVideo = requestSplit[2];
@@ -108,25 +122,29 @@ public class ServerHandler implements Runnable{
                     this.dos.flush();
                 }
 
+                // Prepara a stream para enviar packets para o cliente
                 if(requestSplit[1].equals(Messages.ready)){
                     this.video = this.database.getVideo(requestSplit[2]);
                     if(this.video != null){
-                        Thread t = new Thread(() -> this.sendPackets(requestSplit[3]));
+                        Thread t = new Thread(() -> this.sendPackets(requestSplit[3])); // Thread responsável por criar a stream (se necessário) e conectar o cliente
                         t.start();
                     }
                 }
 
+                // Desconecta o cliente, pára os loops de transmissão de frames e o de espera de mensagens
                 if(requestSplit[1].equals(Messages.disconnect)){
                     status = false;
                     activeStreaming = false;
                     continue;
                 }
+
+                // Responde ao pedido de ping com 1. Serve apenas para verificação de conexão
                 if(requestSplit[1].equals(Messages.ping)){
                     this.dos.writeInt(1);
                     this.dos.flush();
                 }
             }
-            catch(IOException e){
+            catch(IOException e){ // Se houver algum crash durante a conexão, pára a stream para o cliente e liberta recursos associados
                 System.out.println("Cliente " + this.address + " desconectado inesperadamente");
                 activeStreaming = false;
                 this.closeSocket();

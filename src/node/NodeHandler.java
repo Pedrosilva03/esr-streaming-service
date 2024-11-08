@@ -41,13 +41,14 @@ public class NodeHandler implements Runnable{
 
     private void sendPackets(String request){
         this.activeStreaming = true;
-        this.manager.createStream(this.address.getHostAddress(), this.video, this.neighboursWithVideo, request);
+        this.manager.createStream(this.address.getHostAddress(), this.video, this.neighboursWithVideo, request); // Esta função já faz o dois em um, verifica se existe e se não, cria-a
         while(activeStreaming){
             try{                
                 byte[] frameData = new byte[65535];
-                int frameLength = this.manager.stream(video, frameData);
+                int frameLength = this.manager.stream(video, frameData); // Vai buscar o frame e o seu tamanho (double return), por isso é que envia o array de bytes
                 //int frame_length = this.video.getnextframe(b);
 
+                // Lógica para criar o packet RTP e enviar
                 int sequenceNumber = 0;
                 int timestamp = (int) System.currentTimeMillis();
 
@@ -61,11 +62,11 @@ public class NodeHandler implements Runnable{
 
                 sequenceNumber++;
 
-                Thread.sleep(40);
+                Thread.sleep(40); // 40 milissegundos para simular 25fps
             }
             catch(Exception e){
                 System.out.println("Error getting frame to stream");
-                this.manager.disconnectUser(this.address.getHostAddress(), video);
+                this.manager.disconnectUser(this.address.getHostAddress(), video); // Caso crashe, desconecta o utilizador da stream (evitar streams abertas infinitamente)
                 return;
             }
         }

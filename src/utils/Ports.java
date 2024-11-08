@@ -1,5 +1,8 @@
 package utils;
 
+/*
+ * Classe que guarda alguns valores de portas padrão
+ */
 public class Ports {
     public static final int DEFAULT_SERVER_PORT = 53350;
 

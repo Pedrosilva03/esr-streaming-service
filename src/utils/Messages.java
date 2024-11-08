@@ -4,6 +4,7 @@ import java.util.Random;
 
 /**
  * Classe para guardar o protocolo de mensagens do sistema
+ * Funções intuitivas
  */
 public class Messages {
     public static final String check_video = "CHECK_VIDEO"; // Mensagem para verificar se um nodo ou o servidor têm o video.
@@ -11,7 +12,7 @@ public class Messages {
     public static final String ready = "READY"; // Mensagem para desconectar do servidor
     public static final String ping = "PING"; // Mensagem para desconectar do servidor
     
-    public static Random randomIDGenerator = new Random();
+    public static Random randomIDGenerator = new Random(); // Gerador de IDs aleatórios para as mensagens
 
     public static String generateCheckVideoMessage(String videoName){
         StringBuilder sb = new StringBuilder();

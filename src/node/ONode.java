@@ -7,6 +7,9 @@ import java.net.Socket;
 import utils.Extras;
 import utils.Ports;
 
+/*
+ * Servidor básico
+ */
 public class ONode {
     public static ServerSocket ss;
     public static void main(String[] args) {

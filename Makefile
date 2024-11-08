@@ -9,6 +9,9 @@ NODE_SRC := $(SRC_DIR)/node/*.java
 SERVER_SRC := $(SRC_DIR)/server/*.java
 CLASSPATH := -cp $(SRC_DIR):lib/*
 
+PYTHON := python3
+VISUALIZER_SRC := $(SRC_DIR)/visualizer/dynamicView.py
+
 # Compilação
 all: client node server
 
@@ -33,6 +36,9 @@ run_node:
 
 run_server:
 	DISPLAY=$(DISPLAY) $(JAVA) $(CLASSPATH) server.Server
+
+run_visualizer:
+	DISPLAY=$(DISPLAY) $(PYTHON) $(VISUALIZER_SRC)
 
 clean:
 	rm -f $(SRC_DIR)/utils/*.class $(SRC_DIR)/client/*.class $(SRC_DIR)/node/*.class $(SRC_DIR)/server/*.class

@@ -120,8 +120,14 @@ public class OClient {
 
     private static void disconnectFromServer(){
         try{
-            dos.writeUTF(Messages.generateDisconnectMessage());
+            dos.writeUTF(Messages.generateDisconnectMessage()); // Gera uma mensagem de desconexão e envia para o nodo onde está conectado
             dos.flush();
+
+            dis.close();
+            dos.close();
+            tcpSocket.close();
+
+            udpSocket.close();
         }
         catch(IOException io){
             System.out.println("Erro ao tentar desconectar, a sair forçadamente");
@@ -136,7 +142,7 @@ public class OClient {
         //tcpSocket = new Socket("10.0.21.2", Ports.DEFAULT_NODE_TCP_PORT); // Socket para o PoP3
         //tcpSocket = new Socket("10.0.13.2", Ports.DEFAULT_NODE_TCP_PORT); // Socket para o O2
 
-        tcpSocket = new Socket(neighbours.get(0), Ports.DEFAULT_NODE_TCP_PORT);
+        tcpSocket = new Socket(neighbours.get(0), Ports.DEFAULT_NODE_TCP_PORT); // Conecta-se ao melhor nodo, predeterminado em função do RTT
 
         dis = new DataInputStream(tcpSocket.getInputStream());
         dos = new DataOutputStream(tcpSocket.getOutputStream());
@@ -151,9 +157,9 @@ public class OClient {
     private static void recieveVideo(String videoString) throws IOException{
         playing = true;
         while(playing){
-            while(pause){
+            while(pause){ // O pause para de ler packets
                 try{
-                    Thread.sleep(40);
+                    Thread.sleep(40); // Verifica todos os 40 milissegundos se houve unpause
                 }
                 catch(InterruptedException e){
                     System.out.println("Error pausing");
@@ -194,7 +200,7 @@ public class OClient {
     }
 
     private static void requestVideo(String video) throws IOException{
-        dos.writeUTF(Messages.generateReadyMessage(video, udpSocket.getLocalPort()));
+        dos.writeUTF(Messages.generateReadyMessage(video, udpSocket.getLocalPort())); // O gerador de mensagens "ready" envia para o nodo vizinho a porta para onde pode enviar packets
         recieveVideo(video);
     }
 
@@ -203,6 +209,9 @@ public class OClient {
         System.exit(0);
     }
 
+    /*
+     * A função atualiza a lista dos vizinhos por ordem de melhor qualidade de conexão
+     */
     private static void importNeighbours() throws IOException{
         neighbours = Extras.pingNeighbours(null, Extras.getNeighborsIPs(Extras.getLocalAddress()));
     }
@@ -212,11 +221,11 @@ public class OClient {
             importNeighbours();
             setupConnection();
             try{
-                udpSocket = new DatagramSocket(Extras.generateRandomPort());
+                udpSocket = new DatagramSocket(Extras.generateRandomPort()); // Abre o socket numa porta aleatória
             }
             catch(IOException e){
                 System.out.println("Erro ao iniciar conexão para receção");
-                disconnectFromServer();
+                disconnectFromServer(); // Caso haja erro ao abrir o socket UDP, desconecta-se do servidor
             }
         }
         catch(IOException e){

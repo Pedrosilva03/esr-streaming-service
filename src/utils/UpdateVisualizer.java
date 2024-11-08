@@ -6,6 +6,11 @@ import java.io.IOException;
 import java.net.Socket;
 
 public class UpdateVisualizer {
+    /*
+     * Função que envia pedidos de atualização para o simulador da rede overlay
+     * Status = 1 -> Ativar conexão
+     * Status = 0 -> Desativar conexão
+     */
     public static void updateVisualizer(String node1, String node2, int status){
         try{
             Socket aux = new Socket("10.0.1.1", 12345);

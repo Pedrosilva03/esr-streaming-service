@@ -39,18 +39,24 @@ public class NodeManager {
         catch(NullPointerException e){}
     }
 
+    /*
+     * Esta função verifica se este nodo está a streamar o vídeo pedido e se não, pergunta aos vizinhos se o vídeo existe na rede
+     */
     public boolean checkVideoExists(String requestAddress, String video, String message, List<String> neighboursWithVideo){
         if(!this.streamingCurrently.containsKey(video)){
-            for(String neighbour: this.neighbours){
-                if(neighbour.equals(requestAddress)) continue;
-                if(NodeRecursive.checkVideoOnNode(message, neighbour)) neighboursWithVideo.add(neighbour);
+            for(String neighbour: this.neighbours){ // Flooding da mensagem de verificação da existencia do vídeo
+                if(neighbour.equals(requestAddress)) continue; // Caso para evitar enviar mensagens para trás. Quem pediu verificação a este nodo não volta a receber o mesmo pedido
+                if(NodeRecursive.checkVideoOnNode(message, neighbour)) neighboursWithVideo.add(neighbour); // Se um nodo responder afirmativamente, adiciona a uma lista de possíveis nodos para pedir frames
             }
-            if(neighboursWithVideo.isEmpty()) return false;
+            if(neighboursWithVideo.isEmpty()) return false; // Caso não encontre, o vídeo não existe na rede.
             else return true;
         }
         else return true;
     }
 
+    /*
+     * Função responsável por avisar o nodo que estava a enviar frames para aqui que já não é preciso e por fechar os sockets e streams.
+     */
     private void closeStream(DatagramSocket udpSocket, Socket aux, DataInputStream dis, DataOutputStream dos) throws IOException{
         dos.writeUTF(Messages.generateDisconnectMessage());
         dos.flush();
@@ -62,16 +68,19 @@ public class NodeManager {
         udpSocket.close();
     }
 
+    /*
+     * Função principal de criação e inicio de stream
+     */
     public void createStream(String requestAddress, String video, List<String> neighboursWithVideo, String request){
         if(!this.streamingCurrently.containsKey(video)){
             List<String> neighbour;
             if(!neighboursWithVideo.isEmpty()) neighbour = Extras.pingNeighbours(requestAddress, neighboursWithVideo);
-            else neighbour = Extras.pingNeighbours(requestAddress, this.neighbours);
+            else neighbour = Extras.pingNeighbours(requestAddress, this.neighbours); // Isto é mais porque o if de cima é um bocado inútil (retorna os vizinhos por ordem de menor RTT)
 
-            for(String neighbourFast: neighbour){
+            for(String neighbourFast: neighbour){ // Corre os vizinhos por ordem de prioridade e tenta estabelecer uma conexão com eles
                 try{
                     Socket aux = new Socket(neighbourFast, Ports.DEFAULT_NODE_TCP_PORT);
-                    aux.setSoTimeout(200);
+                    aux.setSoTimeout(200); // Timeout para receber mensagens de erro
                     DataInputStream dis = new DataInputStream(aux.getInputStream());
                     DataOutputStream dos = new DataOutputStream(aux.getOutputStream());
 
@@ -81,7 +90,7 @@ public class NodeManager {
                     dos.flush();
 
                     try{
-                        if(dis.readInt() == 0){
+                        if(dis.readInt() == 0){ // Espera por um sinal de erro (caso o socket dê timeout, está tudo bem, continuar para a criação da stream)
                             dos.writeUTF(Messages.generateDisconnectMessage());
                             dos.flush();
 
@@ -96,35 +105,38 @@ public class NodeManager {
                     catch(SocketTimeoutException e){}
                 
                     Streaming s = new Streaming(video, udpSocket);
-                    this.streamingCurrently.put(video, s);
-                    Thread t = new Thread(() -> {
-                        Thread tt = new Thread(s);
+                    this.streamingCurrently.put(video, s); // Cria a stream e coloca a na lista de streams ativas neste nodo
+                    Thread t = new Thread(() -> { // Thread que vai ficar atenta ao fim da stream para notificar o fornecedor da stream
+                        Thread tt = new Thread(s); // Thread dedicada a receber pacote e guardá-los
                         tt.start();
                         System.out.println("Streaming do video: " + video + " iniciada.");
                         try{
                             tt.join();
-                            this.streamingCurrently.remove(video);
+                            this.streamingCurrently.remove(video); // Remove a stream da lista de streams ativas neste nodo
                             System.out.println("Streaming do video: " + video + " fechada.");
-                            UpdateVisualizer.updateVisualizer(Extras.getHost(requestAddress), Extras.getHost(Extras.getLocalAddress()), 0);
+                            UpdateVisualizer.updateVisualizer(Extras.getHost(requestAddress), Extras.getHost(Extras.getLocalAddress()), 0); // Atualiza o simulador da rede overlay
 
-                            this.closeStream(udpSocket, aux, dis, dos);
+                            this.closeStream(udpSocket, aux, dis, dos); // Notifica o fornecedor e liberta recursos
                         }
                         catch(InterruptedException | IOException e){
                             System.out.println(e.getMessage());
                         }
                     });
                     t.start();
-                    break;
+                    break; // Encontrou o nodo fornecedor, então não precisa de correr outros vizinhos
                 }
                 catch(Exception e){
                     System.out.println(e.getMessage());
                 }
             }
         }
-        else this.connectUser(video);
-        UpdateVisualizer.updateVisualizer(Extras.getHost(requestAddress), Extras.getHost(Extras.getLocalAddress()), 1);
+        else this.connectUser(video); // Caso já esteja a streamar o vídeo pedido, apenas adiciona o cliente/nodo
+        UpdateVisualizer.updateVisualizer(Extras.getHost(requestAddress), Extras.getHost(Extras.getLocalAddress()), 1); // Atualiza o simulador da rede overlay
     }
 
+    /*
+     * Função que retorna o frame atual (double return: preenche o buffer com o frame, e retorna o tamanho desse frame ao mesmo tempo)
+     */
     public int stream(String video, byte[] data) throws Exception{
         return this.streamingCurrently.get(video).getFrame(data);
     }

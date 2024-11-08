@@ -9,7 +9,6 @@ import utils.Ports;
 
 /*
  * Classe que trata de todos os pedidos a outros nodos
- * Trata de pedir por frames a outros nodos
  * Pedidos de existência de um video na rede
  */
 public class NodeRecursive {

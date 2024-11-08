@@ -4,7 +4,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
 /*
- * Class that abstracts all the streaming logic for mutiple usage
+ * Classe que abstrai a lógica do streaming para ser usado em várias circunstâncias
  */
 public class Streaming implements Runnable{
     private VideoStream video;
@@ -27,11 +27,18 @@ public class Streaming implements Runnable{
         this.udpSocket = udpSocket;
     }
 
+    /*
+     * Função que atualiza o frame atual
+     */
     public void setFrame(byte[] newFrame, int newFrameSize){
         System.arraycopy(newFrame, 0, this.lastFrameData, 0, newFrameSize);
         this.lastFrameSize = newFrameSize;
     }
 
+    /*
+     * Para o caso do nodo
+     * Função que pede ao vizinho responsável por streamar por um frame novo
+     */
     private int requestVideoToNeighbour(){
         try{
             // Receber pacote RTP
@@ -73,11 +80,17 @@ public class Streaming implements Runnable{
         return this.video.getFilename();
     }
 
+    /*
+     * Função que retorna o frame atual (double return: Preenche o buffer com os dados do frame e devolve o tamanho)
+     */
     public int getFrame(byte[] data) throws Exception{
         System.arraycopy(this.lastFrameData, 0, data, 0, data.length);
         return this.lastFrameSize;
     }
 
+    /*
+     * Funções que atualizam o contador de viewers
+     */
     public void addUser(){
         this.usersConnected++;
     }
@@ -86,6 +99,10 @@ public class Streaming implements Runnable{
         this.usersConnected--;
     }
 
+    /*
+     * Função que atualiza os frames da stream para serem transmtidos
+     * Corre enquanto houver alguém conectado
+     */
     public void run(){
         while(this.usersConnected > 0){
             try{

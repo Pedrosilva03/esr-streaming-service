@@ -28,10 +28,16 @@ public class Manager {
 
     }
 
+    /*
+     * Função que adiciona um vídeo previamente importado à base de dados do servidor
+     */
     public void addVideo(String name, VideoStream video){
         videos.put(name, video);
     }
 
+    /*
+     * Função que importa videos para a memória do servidor
+     */
     public void addVideosFromFolder(){
         File videoDirectory = new File(this.filepath);
 
@@ -47,33 +53,41 @@ public class Manager {
         }
     }
 
+    /*
+     * Função que adicionar um viewer a uma stream
+     */
     public void connectUser(VideoStream video){
         this.streamingCurrently.get(video).addUser();
     }
 
+    /*
+     * Função que retira um viewer a uma stream
+     */
     public void disconnectUser(String requestAddress, VideoStream video){
         try{
             this.streamingCurrently.get(video).removeUser();
-            UpdateVisualizer.updateVisualizer(Extras.getHost(requestAddress), Extras.getHost(Extras.getLocalAddress()), 0);
+            UpdateVisualizer.updateVisualizer(Extras.getHost(requestAddress), Extras.getHost(Extras.getLocalAddress()), 0); // Atualiza o simulador da rede overlay
         }
         catch(NullPointerException e){}
     }
 
+    /*
+     * Função principal que trata de iniciar a stream e adicionar viewers
+     */
     public void createStream(String requestAddress, VideoStream video){
-        if(!this.streamingCurrently.containsKey(video)){
+        if(!this.streamingCurrently.containsKey(video)){ // Caso em que a stream está inativa
             Streaming s = new Streaming(video);
-            this.streamingCurrently.put(video, s);
+            this.streamingCurrently.put(video, s); // Cria a stream e coloca-a na lista de streams ativas
 
-            Thread t = new Thread(() -> {
-                Thread st = new Thread(s);
+            Thread t = new Thread(() -> { // Thread responsável por esperar pelo fim da stream para atualizar o sistema
+                Thread st = new Thread(s); // Thread responsável por atualizar o frame atual
                 st.start();
                 try{
                     st.join();
-                    streamingCurrently.remove(video);
+                    streamingCurrently.remove(video); // Remove a stream da lista de streams ativas
                     System.out.println("Streaming do video: " + video.getFilename() + " fechada.");
-                    video.resetVideo();
-                    UpdateVisualizer.updateVisualizer(Extras.getHost(requestAddress), Extras.getHost(Extras.getLocalAddress()), 0);
-
+                    video.resetVideo(); // Reinicia o vídeo para que inicie do zero (caso a stream seja iniciada novamente)
+                    UpdateVisualizer.updateVisualizer(Extras.getHost(requestAddress), Extras.getHost(Extras.getLocalAddress()), 0); // Atualiza o simulador da rede overlay
                 }
                 catch(Exception e){
                     System.out.println(e.getMessage());
@@ -81,18 +95,27 @@ public class Manager {
             });
             t.start();
         }
-        else connectUser(video);
-        UpdateVisualizer.updateVisualizer(Extras.getHost(requestAddress), Extras.getHost(Extras.getLocalAddress()), 1);
+        else connectUser(video); // Caso a stream já esteja ativa, apenas conecta o viewer
+        UpdateVisualizer.updateVisualizer(Extras.getHost(requestAddress), Extras.getHost(Extras.getLocalAddress()), 1); // Atualiza o simulador da rede overlay
     }
 
+    /*
+     * Função que devolve o frame atual da stream (double return: Preenche o buffer com dados do frame e retorna o tamanho do frame)
+     */
     public int stream(VideoStream video, byte[] data) throws Exception{
         return this.streamingCurrently.get(video).getFrame(data);
     }
 
+    /*
+     * Getter normal para devolver o objeto associado a um vídeo através do seu nome
+     */
     public VideoStream getVideo(String name){
         return this.videos.get(name);
     }
 
+    /*
+     * Função que verifica se um vídeo existe na base de dados do servidor
+     */
     public boolean checkVideoExists(String video){
         return this.videos.containsKey(video);
     }
