@@ -43,7 +43,7 @@ public class NodeManager {
      * Esta função verifica se este nodo está a streamar o vídeo pedido e se não, pergunta aos vizinhos se o vídeo existe na rede
      */
     public boolean checkVideoExists(String requestAddress, String video, String message, List<String> neighboursWithVideo){
-        if(!this.streamingCurrently.containsKey(video)){
+        if(!this.checkIfStreamOn(video)){
             for(String neighbour: this.neighbours){ // Flooding da mensagem de verificação da existencia do vídeo
                 if(neighbour.equals(requestAddress)) continue; // Caso para evitar enviar mensagens para trás. Quem pediu verificação a este nodo não volta a receber o mesmo pedido
                 if(NodeRecursive.checkVideoOnNode(message, neighbour)) neighboursWithVideo.add(neighbour); // Se um nodo responder afirmativamente, adiciona a uma lista de possíveis nodos para pedir frames
@@ -74,8 +74,10 @@ public class NodeManager {
     public void createStream(String requestAddress, String video, List<String> neighboursWithVideo, String request){
         if(!this.streamingCurrently.containsKey(video)){
             List<String> neighbour;
-            if(!neighboursWithVideo.isEmpty()) neighbour = Extras.pingNeighbours(requestAddress, neighboursWithVideo);
+            if(!neighboursWithVideo.isEmpty()) neighbour = Extras.pingNeighbours(requestAddress, neighboursWithVideo); // Inútil porque os nodos não guardam conexão então isto dá reset (preguiça de apagar)
             else neighbour = Extras.pingNeighbours(requestAddress, this.neighbours); // Isto é mais porque o if de cima é um bocado inútil (retorna os vizinhos por ordem de menor RTT)
+
+            neighbour = NodeRecursive.checkIfStreamOn(neighbours, video);
 
             for(String neighbourFast: neighbour){ // Corre os vizinhos por ordem de prioridade e tenta estabelecer uma conexão com eles
                 try{
@@ -139,5 +141,9 @@ public class NodeManager {
      */
     public int stream(String video, byte[] data) throws Exception{
         return this.streamingCurrently.get(video).getFrame(data);
+    }
+
+    public boolean checkIfStreamOn(String video){
+        return this.streamingCurrently.containsKey(video);
     }
 }

@@ -122,6 +122,11 @@ public class ServerHandler implements Runnable{
                     this.dos.flush();
                 }
 
+                if(requestSplit[1].equals(Messages.checkIfStreamOn)){
+                    this.dos.writeInt(1);
+                    this.dos.flush();
+                }
+
                 // Prepara a stream para enviar packets para o cliente
                 if(requestSplit[1].equals(Messages.ready)){
                     this.video = this.database.getVideo(requestSplit[2]);

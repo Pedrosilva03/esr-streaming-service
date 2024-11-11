@@ -100,6 +100,13 @@ public class NodeHandler implements Runnable{
                     else this.dos.writeInt(0);
                     this.dos.flush();
                 }
+                if(requestSplit[1].equals(Messages.checkIfStreamOn)){
+                    if(this.manager.checkIfStreamOn(requestSplit[2])){
+                        this.dos.writeInt(1);
+                    }
+                    else this.dos.writeInt(0);
+                    this.dos.flush();
+                }
                 else if(requestSplit[1].equals(Messages.ready)){
                     this.video = new String(requestSplit[2]);
                     if(this.video != null){
