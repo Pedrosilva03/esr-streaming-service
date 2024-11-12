@@ -74,10 +74,13 @@ public class NodeManager {
     public void createStream(String requestAddress, String video, List<String> neighboursWithVideo, String request){
         if(!this.streamingCurrently.containsKey(video)){
             List<String> neighbour;
-            if(!neighboursWithVideo.isEmpty()) neighbour = Extras.pingNeighbours(requestAddress, neighboursWithVideo); // Inútil porque os nodos não guardam conexão então isto dá reset (preguiça de apagar)
-            else neighbour = Extras.pingNeighbours(requestAddress, this.neighbours); // Isto é mais porque o if de cima é um bocado inútil (retorna os vizinhos por ordem de menor RTT)
+            //if(!neighboursWithVideo.isEmpty()) neighbour = Extras.pingNeighbours(requestAddress, neighboursWithVideo); // Inútil porque os nodos não guardam conexão então isto dá reset (preguiça de apagar)
+            //else neighbour = Extras.pingNeighbours(requestAddress, this.neighbours); // Isto é mais porque o if de cima é um bocado inútil (retorna os vizinhos por ordem de menor RTT)
 
-            neighbour = NodeRecursive.checkIfStreamOn(neighbours, video);
+            neighbour = Extras.pingNeighbours(requestAddress, this.neighbours); // Retorna os vizinhos por ordem de menor RTT
+
+            // TODO: Verificar se pode dar prioridade à stream ou ao RTT
+            neighbour = NodeRecursive.checkIfStreamOn(this.neighbours, video); // Vizinhos ordenados por RTT priorizando vizinhos que tem stream ligada
 
             for(String neighbourFast: neighbour){ // Corre os vizinhos por ordem de prioridade e tenta estabelecer uma conexão com eles
                 try{
@@ -116,7 +119,6 @@ public class NodeManager {
                             tt.join();
                             this.streamingCurrently.remove(video); // Remove a stream da lista de streams ativas neste nodo
                             System.out.println("Streaming do video: " + video + " fechada.");
-                            UpdateVisualizer.updateVisualizer(Extras.getHost(requestAddress), Extras.getHost(Extras.getLocalAddress()), 0); // Atualiza o simulador da rede overlay
 
                             this.closeStream(udpSocket, aux, dis, dos); // Notifica o fornecedor e liberta recursos
                         }

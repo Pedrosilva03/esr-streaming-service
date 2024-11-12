@@ -48,6 +48,7 @@ public class NodeRecursive {
      */
     public static List<String> checkIfStreamOn(List<String> neighbours, String video){
         List<String> orderedNeighbours = new ArrayList<>();
+        List<String> neighboursNotStreaming = new ArrayList<>();
         for(String node: neighbours){
             try{
                 Socket aux = new Socket(node, Ports.DEFAULT_NODE_TCP_PORT);
@@ -59,6 +60,7 @@ public class NodeRecursive {
 
                 int valid = dis.readInt();
                 if(valid == 1) orderedNeighbours.add(node);
+                else neighboursNotStreaming.add(node);
 
                 dos.writeUTF(Messages.generateDisconnectMessage());
                 dos.flush();
@@ -71,7 +73,7 @@ public class NodeRecursive {
                 //e.printStackTrace();
             }
         }
-        if(!orderedNeighbours.isEmpty()) return orderedNeighbours;
-        return neighbours;
+        orderedNeighbours.addAll(neighboursNotStreaming);
+        return orderedNeighbours;
     }
 }

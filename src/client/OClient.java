@@ -126,8 +126,6 @@ public class OClient {
             dis.close();
             dos.close();
             tcpSocket.close();
-
-            udpSocket.close();
         }
         catch(IOException io){
             System.out.println("Erro ao tentar desconectar, a sair forçadamente");
@@ -197,6 +195,7 @@ public class OClient {
                 System.out.println("Recebido pacote com tipo de payload inesperado: " + rtpPacket.getpayloadtype());
             }
         }
+        udpSocket.close();
     }
 
     private static void requestVideo(String video) throws IOException{

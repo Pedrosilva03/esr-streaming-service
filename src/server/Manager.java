@@ -87,7 +87,6 @@ public class Manager {
                     streamingCurrently.remove(video); // Remove a stream da lista de streams ativas
                     System.out.println("Streaming do video: " + video.getFilename() + " fechada.");
                     video.resetVideo(); // Reinicia o vídeo para que inicie do zero (caso a stream seja iniciada novamente)
-                    UpdateVisualizer.updateVisualizer(Extras.getHost(requestAddress), Extras.getHost(Extras.getLocalAddress()), 0); // Atualiza o simulador da rede overlay
                 }
                 catch(Exception e){
                     System.out.println(e.getMessage());
