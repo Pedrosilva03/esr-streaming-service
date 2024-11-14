@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -155,12 +156,16 @@ public class Extras {
     public static List<String> pingNeighbours(String address, List<String> neighbours){
         HashMap<String, Long> fastestNodes = new HashMap<>();
 
+        Socket aux = null;
+        DataInputStream dis = null;
+        DataOutputStream dos = null;
+
         for(String neighbour: neighbours){
             if(address != null && neighbour.equals(address)) continue; // No caso de pings recursivos, um nodo não dá ping a quem lhe mandou pedido (null se for o cliente a iniciar pedido)
             try{
-                Socket aux = new Socket(neighbour, Ports.DEFAULT_NODE_TCP_PORT);
-                DataInputStream dis = new DataInputStream(aux.getInputStream());
-                DataOutputStream dos = new DataOutputStream(aux.getOutputStream());
+                aux = new Socket(neighbour, Ports.DEFAULT_NODE_TCP_PORT);
+                dis = new DataInputStream(aux.getInputStream());
+                dos = new DataOutputStream(aux.getOutputStream());
 
                 dos.writeUTF(Messages.generatePingMessage());
                 dos.flush();
@@ -180,6 +185,17 @@ public class Extras {
                 dis.close();
                 dos.close();
                 aux.close();
+            }
+            catch(SocketTimeoutException s){
+                try{
+                    dos.writeUTF(Messages.generateDisconnectMessage());
+                    dos.flush();
+
+                    dis.close();
+                    dos.close();
+                    aux.close();
+                }
+                catch(IOException e){}
             }
             catch(IOException e){
                 //System.out.println("Erro ao conectar-se ao nodo: " + neighbour + " " + e.getMessage());

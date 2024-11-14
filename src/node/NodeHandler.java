@@ -41,7 +41,17 @@ public class NodeHandler implements Runnable{
 
     private void sendPackets(String request){
         this.activeStreaming = true;
-        this.manager.createStream(this.address.getHostAddress(), this.video, this.neighboursWithVideo, request); // Esta função já faz o dois em um, verifica se existe e se não, cria-a
+        int possibleStreaming = this.manager.createStream(this.address.getHostAddress(), this.video, this.neighboursWithVideo, request); // Esta função já faz o dois em um, verifica se existe e se não, cria-a
+
+        try{
+            this.dos.writeInt(possibleStreaming);
+            this.dos.flush();
+            if(possibleStreaming == 0) return;
+        }
+        catch(IOException e){
+            e.printStackTrace();
+        }
+
         while(activeStreaming){
             try{                
                 byte[] frameData = new byte[65535];

@@ -71,7 +71,7 @@ public class NodeManager {
     /*
      * Função principal de criação e inicio de stream
      */
-    public void createStream(String requestAddress, String video, List<String> neighboursWithVideo, String request){
+    public int createStream(String requestAddress, String video, List<String> neighboursWithVideo, String request){
         if(!this.streamingCurrently.containsKey(video)){
             List<String> neighbour;
             //if(!neighboursWithVideo.isEmpty()) neighbour = Extras.pingNeighbours(requestAddress, neighboursWithVideo); // Inútil porque os nodos não guardam conexão então isto dá reset (preguiça de apagar)
@@ -80,10 +80,11 @@ public class NodeManager {
             neighbour = Extras.pingNeighbours(requestAddress, this.neighbours); // Retorna os vizinhos por ordem de menor RTT
             neighbour = NodeRecursive.checkIfStreamOn(neighbour, video); // Vizinhos ordenados por RTT priorizando vizinhos que tem stream ligada
 
+            if(neighbour.isEmpty()) return 0;
+
             for(String neighbourFast: neighbour){ // Corre os vizinhos por ordem de prioridade e tenta estabelecer uma conexão com eles
                 try{
                     Socket aux = new Socket(neighbourFast, Ports.DEFAULT_NODE_TCP_PORT);
-                    aux.setSoTimeout(200); // Timeout para receber mensagens de erro
                     DataInputStream dis = new DataInputStream(aux.getInputStream());
                     DataOutputStream dos = new DataOutputStream(aux.getOutputStream());
 
@@ -93,7 +94,7 @@ public class NodeManager {
                     dos.flush();
 
                     try{
-                        if(dis.readInt() == 0){ // Espera por um sinal de erro (caso o socket dê timeout, está tudo bem, continuar para a criação da stream)
+                        if(dis.readInt() == 0){ // Espera por um sinal de erro (se receber zero, o nodo atual deu erro. Caso esse seja o único, devolve também um erro)
                             dos.writeUTF(Messages.generateDisconnectMessage());
                             dos.flush();
 
@@ -102,11 +103,12 @@ public class NodeManager {
                             aux.close();
 
                             udpSocket.close();
+                            if(neighbour.size() == 1) return 0;
                             continue;
                         }
                     }
-                    catch(SocketTimeoutException e){}
-                
+                    catch(IOException e){}
+                    
                     Streaming s = new Streaming(video, udpSocket);
                     this.streamingCurrently.put(video, s); // Cria a stream e coloca a na lista de streams ativas neste nodo
                     Thread t = new Thread(() -> { // Thread que vai ficar atenta ao fim da stream para notificar o fornecedor da stream
@@ -131,9 +133,11 @@ public class NodeManager {
                     System.out.println(e.getMessage());
                 }
             }
+            if(!this.streamingCurrently.containsKey(video)) return 0;
         }
         else this.connectUser(video); // Caso já esteja a streamar o vídeo pedido, apenas adiciona o cliente/nodo
         UpdateVisualizer.updateVisualizer(Extras.getHost(requestAddress), Extras.getHost(Extras.getLocalAddress()), 1); // Atualiza o simulador da rede overlay
+        return 1;
     }
 
     /*

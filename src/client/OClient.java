@@ -19,6 +19,7 @@ import java.util.Scanner;
 import java.util.List;
 
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
@@ -152,7 +153,7 @@ public class OClient {
         return dis.readInt();
     }
 
-    private static void recieveVideo(String videoString) throws IOException{
+    private static void recieveVideo(String videoString) throws SocketTimeoutException, IOException{
         playing = true;
         while(playing){
             while(pause){ // O pause para de ler packets
@@ -198,7 +199,7 @@ public class OClient {
         udpSocket.close();
     }
 
-    private static void requestVideo(String video) throws IOException{
+    private static void requestVideo(String video) throws SocketTimeoutException, IOException{
         dos.writeUTF(Messages.generateReadyMessage(video, udpSocket.getLocalPort())); // O gerador de mensagens "ready" envia para o nodo vizinho a porta para onde pode enviar packets
         recieveVideo(video);
     }
@@ -221,6 +222,7 @@ public class OClient {
             setupConnection();
             try{
                 udpSocket = new DatagramSocket(Extras.generateRandomPort()); // Abre o socket numa porta aleatória
+                udpSocket.setSoTimeout(2000);
             }
             catch(IOException e){
                 System.out.println("Erro ao iniciar conexão para receção");
@@ -251,6 +253,11 @@ public class OClient {
                 System.out.println("Video não encontrado no sistema");
                 disconnectFromServer();
             }
+        }
+        catch(SocketTimeoutException ss){
+            System.out.println("Condições de rede demasiado instáveis para a transmissão");
+            disconnectFromServer();
+            System.exit(1);
         }
         catch(IOException e){
             System.out.println("Conexão perdida");

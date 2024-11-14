@@ -134,6 +134,8 @@ public class ServerHandler implements Runnable{
                         Thread t = new Thread(() -> this.sendPackets(requestSplit[3])); // Thread responsável por criar a stream (se necessário) e conectar o cliente
                         t.start();
                     }
+                    this.dos.writeInt(1);
+                    this.dos.flush();
                 }
 
                 // Desconecta o cliente, pára os loops de transmissão de frames e o de espera de mensagens
