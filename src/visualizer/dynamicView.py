@@ -126,22 +126,22 @@ def update_path(canvas, node1, node2):
     count = streamCounters[node2][0]
     count += 1
     streamCounters[node2] = (count, streamCounters[node2][1])
-    edges[(node1, node2)] += 1
+    edges[(node1, node2) if (node1, node2) in edges else (node2, node1)] += 1
 
-    if edges[(node1, node2)] == 1:
+    if edges[(node1, node2) if (node1, node2) in edges else (node2, node1)] == 1:
         canvas.create_line(nodes[node1], nodes[node2], fill="red", width=2)
 
     drawStreamCounters()
 
 def delete_path(canvas, node1, node2):
     count = streamCounters[node2][0]
-    if count > 0:
-        count -= 1
-        edges[(node1, node2)] -= 1
+
+    count -= 1
+    edges[(node1, node2) if (node1, node2) in edges else (node2, node1)] -= 1
 
     streamCounters[node2] = (count, streamCounters[node2][1])
 
-    if edges[(node1, node2)] == 0:
+    if edges[(node1, node2) if (node1, node2) in edges else (node2, node1)] == 0:
         canvas.create_line(nodes[node1], nodes[node2], fill="black", width=2)
     
     drawStreamCounters()

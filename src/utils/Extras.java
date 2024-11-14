@@ -26,6 +26,7 @@ import org.json.JSONObject;
  * Não são funcionalidades concretas do sistema
  */
 public class Extras {
+    public static final int THRESHOLD = 100;
     /*
      * Função que converte o valores YUV de uma imagem para RGB
      * Uma imagem que já é RGB não deve ser convertida
@@ -165,7 +166,7 @@ public class Extras {
                 dos.flush();
                 long start = System.currentTimeMillis(); // Timestamp de quando o ping foi enviado
 
-                aux.setSoTimeout(1000); // Timeout de 1 segundo (detetar vizinhos desativados ou com problemas)
+                aux.setSoTimeout(THRESHOLD); // Timeout de threshold (detetar vizinhos desativados ou com problemas)
                 dis.readInt();
                 aux.setSoTimeout(0);
                 long diff = System.currentTimeMillis() - start; // Timestamp de quando o ping obteve resposta
@@ -191,7 +192,8 @@ public class Extras {
         for(Entry<String, Long> addresss: fastestNodesSorted){
             fastestAddresses.add(addresss.getKey());
         }
-        return fastestAddresses;
+        if(!fastestAddresses.isEmpty()) return fastestAddresses;
+        return neighbours;
     }
 
     /*

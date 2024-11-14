@@ -78,9 +78,7 @@ public class NodeManager {
             //else neighbour = Extras.pingNeighbours(requestAddress, this.neighbours); // Isto é mais porque o if de cima é um bocado inútil (retorna os vizinhos por ordem de menor RTT)
 
             neighbour = Extras.pingNeighbours(requestAddress, this.neighbours); // Retorna os vizinhos por ordem de menor RTT
-
-            // TODO: Verificar se pode dar prioridade à stream ou ao RTT
-            neighbour = NodeRecursive.checkIfStreamOn(this.neighbours, video); // Vizinhos ordenados por RTT priorizando vizinhos que tem stream ligada
+            neighbour = NodeRecursive.checkIfStreamOn(neighbour, video); // Vizinhos ordenados por RTT priorizando vizinhos que tem stream ligada
 
             for(String neighbourFast: neighbour){ // Corre os vizinhos por ordem de prioridade e tenta estabelecer uma conexão com eles
                 try{
