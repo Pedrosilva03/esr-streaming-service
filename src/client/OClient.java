@@ -231,7 +231,7 @@ public class OClient {
         }
         catch(IOException e){
             System.out.println("Erro ao conectar-se");
-            System.exit(1);
+            System.exit(0);
         }
         catch(IndexOutOfBoundsException e){
             System.out.println("Vizinhos não encontrados");
@@ -257,11 +257,11 @@ public class OClient {
         catch(SocketTimeoutException ss){
             System.out.println("Condições de rede demasiado instáveis para a transmissão");
             disconnectFromServer();
-            System.exit(1);
+            System.exit(0);
         }
         catch(IOException e){
             System.out.println("Conexão perdida");
-            System.exit(1);
+            System.exit(0);
         }
     }
 }
