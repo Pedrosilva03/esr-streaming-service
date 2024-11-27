@@ -2,7 +2,7 @@ node n1 {
     type router
     model host
     network-config {
-	hostname S1O1
+	hostname O1
 	!
 	interface eth1
 	 ip address 10.0.1.10/24
@@ -607,7 +607,7 @@ annotation a1 {
     label {CDN}
     labelcolor black
     fontfamily {Arial}
-    fontsize 12
+    fontsize {12}
     color #CFCFFF
     width 0
     border black
@@ -620,7 +620,7 @@ annotation a2 {
     label {Access}
     labelcolor black
     fontfamily {Arial}
-    fontsize 12
+    fontsize {12}
     color #cfcf33
     width 0
     border black
