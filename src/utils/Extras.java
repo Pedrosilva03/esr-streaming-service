@@ -161,7 +161,7 @@ public class Extras {
         DataOutputStream dos = null;
 
         for(String neighbour: neighbours){
-            if(address != null && neighbour.equals(address)) continue; // No caso de pings recursivos, um nodo não dá ping a quem lhe mandou pedido (null se for o cliente a iniciar pedido)
+            if(address != null && neighbour.equals(address)) continue; // No caso de pings recursivos, um nodo não dá ping a quem lhe mandou pedido (null se for o nodo a iniciar pedido, porque ninguém lhe mandou)
             try{
                 aux = new Socket(neighbour, Ports.DEFAULT_NODE_TCP_PORT);
                 dis = new DataInputStream(aux.getInputStream());

@@ -16,6 +16,7 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 
 import java.util.Scanner;
+import java.util.ArrayList;
 import java.util.List;
 
 import java.net.Socket;
@@ -47,6 +48,8 @@ public class OClient {
 
     private static DataInputStream dis;
     private static DataOutputStream dos;
+
+    private static String video;
 
     private static boolean playing;
     private static boolean pause;
@@ -199,8 +202,51 @@ public class OClient {
         udpSocket.close();
     }
 
+    /*
+     * Função responsável por garantir que o cliente está sempre conectado ao mesmo PoP
+     * Caso a função detete que existe um PoP melhor que o atual, envia um pedido de stream para o novo e depois envia um pedido de disconnect para o antigo
+     * Para poupar recursos, esta verificação acontece todos os 3 segundos
+     */
+    private static void popMonitor(){
+        while(playing){
+            try{
+                List<String> neighboursAux = Extras.pingNeighbours(null, new ArrayList<>(neighbours));
+                if(!neighboursAux.get(0).equals(neighbours.get(0))){
+                    // Trocar de PoP
+                    Socket tmp = tcpSocket;
+                    DataInputStream disTmp = dis;
+                    DataOutputStream dosTmp = dos;
+
+                    tcpSocket = new Socket(neighboursAux.get(0), Ports.DEFAULT_NODE_TCP_PORT);
+                    dis = new DataInputStream(tcpSocket.getInputStream());
+                    dos = new DataOutputStream(tcpSocket.getOutputStream());
+
+                    dos.writeUTF(Messages.generateReadyMessage(video, udpSocket.getLocalPort())); // O gerador de mensagens "ready" envia para o nodo vizinho a porta para onde pode enviar packets
+
+                    dosTmp.writeUTF(Messages.generateDisconnectMessage());
+
+                    tmp.close();
+                    disTmp.close();
+                    dosTmp.close();
+                }
+                neighbours.clear();
+                neighbours.addAll(neighboursAux);
+                Thread.sleep(3000);
+            }
+            catch(InterruptedException e){
+                System.out.println("Erro no timeout da monitorização: " + e.getMessage());
+            }
+            catch(IOException f){
+                System.out.println(f.getMessage());
+            }
+        }
+    }
+
     private static void requestVideo(String video) throws SocketTimeoutException, IOException{
         dos.writeUTF(Messages.generateReadyMessage(video, udpSocket.getLocalPort())); // O gerador de mensagens "ready" envia para o nodo vizinho a porta para onde pode enviar packets
+        new Thread(() -> {
+            popMonitor();
+        }).start();
         recieveVideo(video);
     }
 
@@ -241,7 +287,7 @@ public class OClient {
         try{
             System.out.println("Bem vindo ao SRTube! - Escolha um vídeo para assistir");
             
-            String video = s.nextLine();
+            video = s.nextLine();
 
             int valid = checkVideo(video);
             
