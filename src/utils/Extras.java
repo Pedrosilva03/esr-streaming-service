@@ -22,6 +22,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.stream.IntStream;
+
 /*
  * Classe com funções auxiliares ao funcionamento do sistema
  * Não são funcionalidades concretas do sistema
@@ -128,8 +130,9 @@ public class Extras {
             for (int i = 0; i < nodesArray.length(); i++) {
                 JSONObject node = nodesArray.getJSONObject(i);
 
+                JSONArray ips = node.getJSONArray("ip");
                 // Compara o IP do nó com o IP fornecido
-                if (node.getString("ip").equals(nodeIP)) {
+                if (IntStream.range(0, ips.length()).mapToObj(ips::get).anyMatch(e -> e.equals(nodeIP))) {
                     // Obtém a lista de vizinhos
                     JSONArray neighborsArray = node.getJSONArray("neighbors");
 
@@ -225,7 +228,7 @@ public class Extras {
      * Utiliza o ficheiro de configuração da rede "hostnames.json" que pode ser encontrado na pasta "config"
      */
     public static String getHost(String ip){
-        String jsonFilePath = "config/hostnames.json";
+        String jsonFilePath = "config/bootstrapper.json";
 
         try {
             // Lê o conteúdo do arquivo JSON
@@ -234,24 +237,17 @@ public class Extras {
             // Cria um objeto JSON a partir do conteúdo lido
             JSONObject jsonObject = new JSONObject(jsonContent);
 
-            // Acessa o array de nós
-            JSONArray hostsArray = jsonObject.getJSONArray("hosts");
+            JSONArray nodesArray = jsonObject.getJSONArray("nodes");
 
             // Procura pelo nó que corresponde ao IP fornecido
-            for (int i = 0; i < hostsArray.length(); i++) {
-                JSONObject host = hostsArray.getJSONObject(i);
+            for (int i = 0; i < nodesArray.length(); i++) {
+                JSONObject node = nodesArray.getJSONObject(i);
 
                 // Compara o IP do nó com o IP fornecido
-                JSONArray ips = host.getJSONArray("ips");
-                for(int j = 0; j < ips.length(); j++){
-                    try{
-                        if(ips.getString(j).equals(ip)){ // Verifica se o IP lido corresponde ao pedido
-                            return host.getString("host"); // Se sim, então o IP pedido pertence a este host, retornando-o
-                        }
-                    }
-                    catch(JSONException e){
-                        continue;
-                    }   
+                JSONArray ips = node.getJSONArray("ip");
+
+                if(IntStream.range(0, ips.length()).mapToObj(ips::get).anyMatch(e -> e.equals(ip))){
+                    return node.getString("name");
                 }
             }
 
