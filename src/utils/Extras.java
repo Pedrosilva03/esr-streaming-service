@@ -19,7 +19,6 @@ import java.util.Map.Entry;
 import java.util.Random;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.stream.IntStream;
@@ -211,8 +210,7 @@ public class Extras {
         for(Entry<String, Long> addresss: fastestNodesSorted){
             fastestAddresses.add(addresss.getKey());
         }
-        if(!fastestAddresses.isEmpty()) return fastestAddresses;
-        return neighbours;
+        return fastestAddresses;
     }
 
     /*
@@ -225,7 +223,7 @@ public class Extras {
 
     /*
      * Função que retorna o nome de um host através do seu IP
-     * Utiliza o ficheiro de configuração da rede "hostnames.json" que pode ser encontrado na pasta "config"
+     * Acede ao bootstrapper, procura o nodo que tem o IP fornecido dentro dos IPs, e devolve o nome desse nodo
      */
     public static String getHost(String ip){
         String jsonFilePath = "config/bootstrapper.json";

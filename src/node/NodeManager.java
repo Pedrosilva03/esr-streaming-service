@@ -80,7 +80,7 @@ public class NodeManager {
             neighbour = Extras.pingNeighbours(requestAddress, this.neighbours); // Retorna os vizinhos por ordem de menor RTT
             neighbour = NodeRecursive.checkIfStreamOn(neighbour, video); // Vizinhos ordenados por RTT priorizando vizinhos que tem stream ligada
 
-            if(neighbour.isEmpty()) return 0;
+            if(neighbour.isEmpty()) return 0; // Caso em que não existe nenhum vizinho adequado para pedir stream.
 
             for(String neighbourFast: neighbour){ // Corre os vizinhos por ordem de prioridade e tenta estabelecer uma conexão com eles
                 try{
@@ -133,7 +133,7 @@ public class NodeManager {
                     System.out.println(e.getMessage());
                 }
             }
-            if(!this.streamingCurrently.containsKey(video)) return 0;
+            if(!this.streamingCurrently.containsKey(video)) return 0; // Se todos os vizinhos deste nodo derem algum erro, devolve uma mensagem de erro também.
         }
         else this.connectUser(video); // Caso já esteja a streamar o vídeo pedido, apenas adiciona o cliente/nodo
         UpdateVisualizer.updateVisualizer(Extras.getHost(requestAddress), Extras.getHost(Extras.getLocalAddress()), 1); // Atualiza o simulador da rede overlay

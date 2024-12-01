@@ -156,7 +156,7 @@ public class OClient {
         return dis.readInt();
     }
 
-    private static void recieveVideo(String videoString) throws SocketTimeoutException, IOException{
+    private static void recieveVideo(String videoString) throws IOException{
         playing = true;
         while(playing){
             while(pause){ // O pause para de ler packets
@@ -242,12 +242,15 @@ public class OClient {
         }
     }
 
-    private static void requestVideo(String video) throws SocketTimeoutException, IOException{
+    private static int requestVideo(String video) throws IOException{
         dos.writeUTF(Messages.generateReadyMessage(video, udpSocket.getLocalPort())); // O gerador de mensagens "ready" envia para o nodo vizinho a porta para onde pode enviar packets
+        int possible = dis.readInt();
+        if(possible == 0) return 0;
         new Thread(() -> {
             popMonitor();
         }).start();
         recieveVideo(video);
+        return 1;
     }
 
     private static void stopVideo(){
@@ -268,7 +271,6 @@ public class OClient {
             setupConnection();
             try{
                 udpSocket = new DatagramSocket(Extras.generateRandomPort()); // Abre o socket numa porta aleatória
-                udpSocket.setSoTimeout(2000);
             }
             catch(IOException e){
                 System.out.println("Erro ao iniciar conexão para receção");
@@ -293,17 +295,17 @@ public class OClient {
             
             if(valid == 1){
                 setupWindow("SRTube");
-                requestVideo(video);
+                int possible = requestVideo(video);
+                if(possible == 0){
+                    System.out.println("Condições de rede demasiado instáveis para a transmissão");
+                    disconnectFromServer();
+                    System.exit(0);
+                }
             }
             else{
                 System.out.println("Video não encontrado no sistema");
                 disconnectFromServer();
             }
-        }
-        catch(SocketTimeoutException ss){
-            System.out.println("Condições de rede demasiado instáveis para a transmissão");
-            disconnectFromServer();
-            System.exit(0);
         }
         catch(IOException e){
             System.out.println("Conexão perdida");
