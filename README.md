@@ -35,6 +35,10 @@ Este repositório contém 3 programas base e vários outros programas auxiliares
 Todos os comandos devem ser executados na raiz do repositório
 
 ### Compilação
+#### DISCLAIMER
+- - O código pode ter problemas com o classpath ao abrir num editor de texto. Para resolver isso basta adicionar ou remover a pasta ```src``` do classpath (um deles deve funcionar)
+- - Isto não terá implicações nenhumas na execução visto que a makefile trata do classpath automaticamente. É apenas para efeitos de erros no editor de texto
+
 - Para compilar o código basta correr o comando
 ```console
 make
