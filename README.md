@@ -8,7 +8,7 @@ Sistema Over-the-top (OTT) para distribuição e visualização de conteúdos.
 - Alternativa para contornar as limitações de recursos da rede
 
 ## Notas do projeto
-- Este projeto foi desenvolvido tendo como base a ferramente CORE para simulação de uma topologia de rede real
+- Este projeto foi desenvolvido tendo como base a ferramenta CORE para simulação de uma topologia de rede real
 - A descrição completa de todo o projeto pode ser encontrada no [relatório](https://github.com/Pedrosilva03/esr-streaming-service/blob/main/doc/ESR_TP2_PL14.pdf)
 
 ## Visão geral dos programas
@@ -162,3 +162,4 @@ ID CHECK_STREAM video_name
 
 ## Conclusão
 Trabalho realizado por Pedro Silva, Diogo Barros e Miguel Pinto
+Nota final: 19/20
