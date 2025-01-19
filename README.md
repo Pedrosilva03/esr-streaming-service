@@ -161,5 +161,5 @@ ID CHECK_STREAM video_name
 ```
 
 ## Conclusão
-Trabalho realizado por Pedro Silva, Diogo Barros e Miguel Pinto
-Nota final: 19/20
+- Trabalho realizado por Pedro Silva, Diogo Barros e Miguel Pinto
+- Nota final: 19/20
